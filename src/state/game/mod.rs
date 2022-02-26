@@ -47,10 +47,9 @@ fn spawn_background(
     for i in -10..11 {
         for j in -10..11 {
             //TODO: use one big image looping or just moving with the camera instead of creating a trillion entities
-            let background_type = "blue background";
             let cloud_height = 3;
-            let image = if j < cloud_height { "full" } else if j == cloud_height { "half" } else { "empty" };
-            let image = SPRITES[background_type][image];
+            let image = if j < cloud_height { SpriteTypeStates::Full } else if j == cloud_height { SpriteTypeStates::Half } else { SpriteTypeStates::Empty };
+            let image = SPRITES[&SpriteType::BlueBG][&image];
             commands
                 .spawn_bundle(SpriteBundle {
                     texture: asset_server.get_handle(image),
@@ -86,7 +85,7 @@ fn load_level(
                         ..Default::default()
                     }),
                 SpriteVariant::SpriteSheet(key) => entity.insert_bundle(SpriteSheetBundle {
-                        texture_atlas: spawn(key),
+                        texture_atlas: spawn(key.to_string()),
                         transform: Transform::from_translation(tile_info.position),
                         ..Default::default()
                     })
@@ -141,7 +140,7 @@ fn player_spritesheet(
 ) {
     for (mut player, mut sprite, mut texture_atlas_handle) in query.iter_mut() {
         if let Some(sheet) = player.update_spritesheet() {
-            *texture_atlas_handle = spawn(sheet, &sprite_handles, &mut texture_atlases, &mut textures);
+            *texture_atlas_handle = spawn(sheet.to_string(), &sprite_handles, &mut texture_atlases, &mut textures);
             *sprite = TextureAtlasSprite::default();
         }
     }

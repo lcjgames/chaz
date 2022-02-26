@@ -2,7 +2,7 @@ use bevy::prelude::{Vec2, Vec3};
 
 use super::hitbox::Hitbox;
 
-use crate::sprite::SpriteVariant;
+use crate::sprite::{SpriteType, SpriteTypeStates, SpriteVariant};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Tile {
@@ -10,7 +10,7 @@ pub enum Tile {
     Ground,
     Player,
     Blue,
-    Npc(&'static str), //TODO: turn into many values to get rid of string
+    Npc(SpriteType), //TODO: turn into many values to get rid of string
 }
 
 impl Tile {
@@ -71,7 +71,6 @@ impl Map {
             start_point + Tile::SIZE * Vec3::new(i as f32, j as f32, 0.0)
         };
 
-        let ground_type = "ground";
         let tile = self[i][j];
         match tile {
             Tile::Empty => None,
@@ -85,31 +84,31 @@ impl Map {
                 let above_left = tile.connects_to(self.above_left(i, j));
                 let above_right = tile.connects_to(self.above_right(i, j));
                 let image_key = match (above, left, right, below) {
-                    (false, false, false, false) => "grass alone",
-                    (false, true, false, false) => "grass left",
-                    (false, false, true, false) => "grass right",
-                    (false, true, true, false) => "grass left right",
-                    (false, false, false, true) => "grass down",
-                    (false, true, false, true) => "grass down left",
-                    (false, false, true, true) => "grass down right",
-                    (false, true, true, true) => "grass down left right",
-                    (true, false, false, false) => "above",
-                    (true, true, false, false) => "above left",
-                    (true, false, true, false) => "above right",
-                    (true, true, true, false) => "below empty",
-                    (true, false, false, true) => "above below",
-                    (true, true, false, true) => "right empty",
-                    (true, false, true, true) => "left empty",
+                    (false, false, false, false) => SpriteTypeStates::AloneGrass,
+                    (false, true, false, false) => SpriteTypeStates::LeftGrass,
+                    (false, false, true, false) => SpriteTypeStates::RightGrass,
+                    (false, true, true, false) => SpriteTypeStates::LeftRightGrass,
+                    (false, false, false, true) => SpriteTypeStates::DownGrass,
+                    (false, true, false, true) => SpriteTypeStates::DownGrassLeft,
+                    (false, false, true, true) => SpriteTypeStates::DownGrassRight,
+                    (false, true, true, true) => SpriteTypeStates::DownGrassLeftRight,
+                    (true, false, false, false) => SpriteTypeStates::Above,
+                    (true, true, false, false) => SpriteTypeStates::LeftAbove,
+                    (true, false, true, false) => SpriteTypeStates::RightAbove,
+                    (true, true, true, false) => SpriteTypeStates::BelowEmpty,
+                    (true, false, false, true) => SpriteTypeStates::BelowAbove,
+                    (true, true, false, true) => SpriteTypeStates::RightEmpty,
+                    (true, false, true, true) => SpriteTypeStates::LeftEmpty,
                     (true, true, true, true) => match (below_left, below_right, above_left, above_right) {
                         //TODO: missing some cases due to not having the images
-                        (false, _, _, _) => "below left empty",
-                        (_, false, _, _) => "below right empty",
-                        (_, _, false, _) => "above left empty",
-                        (_, _, _, false) => "above right empty",
-                        (_, _, _, _) => "full",
+                        (false, _, _, _) => SpriteTypeStates::BelowLeftEmpty,
+                        (_, false, _, _) => SpriteTypeStates::BelowRightEmpty,
+                        (_, _, false, _) => SpriteTypeStates::AboveLeftEmpty,
+                        (_, _, _, false) => SpriteTypeStates::AboveRightEmpty,
+                        (_, _, _, _) => SpriteTypeStates::Full,
                     }
                 };
-                let hitbox = if image_key == "full" {
+                let hitbox = if image_key == SpriteTypeStates::Full {
                     None
                 } else {
                     Some(Hitbox {
@@ -120,7 +119,7 @@ impl Map {
                 Some(TileInfo {
                     tile_type: tile,
                     position: position(0.5),
-                    image: SpriteVariant::Sprite(SPRITES[ground_type][image_key]),
+                    image: SpriteVariant::Sprite(SPRITES[&SpriteType::Ground][&image_key]),
                     hitbox,
                 })
             },
@@ -128,7 +127,7 @@ impl Map {
                 Some(TileInfo {
                     tile_type: tile,
                     position: position(2.0),
-                    image: SpriteVariant::SpriteSheet("green idle"),
+                    image: SpriteVariant::SpriteSheet(SpriteType::IdleGreen),
                     hitbox: Some(Hitbox {
                         relative_position: Vec3::default(), //TODO: better values
                         size: Vec2::new(Tile::SIZE, Tile::SIZE), //TODO: better values
@@ -139,7 +138,7 @@ impl Map {
                 Some(TileInfo {
                     tile_type: tile,
                     position: position(1.0),
-                    image: SpriteVariant::SpriteSheet("blue"),
+                    image: SpriteVariant::SpriteSheet(SpriteType::Blue),
                     hitbox: Some(Hitbox {
                         relative_position: Vec3::default(), //TODO: better values
                         size: Vec2::new(Tile::SIZE, Tile::SIZE), //TODO: better values
@@ -201,13 +200,13 @@ const LEVEL_0: Map = Map { values: [
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Blue, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
-    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc("pink"), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
+    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc(SpriteType::Pink), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
-    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc("yellow"), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
+    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc(SpriteType::Yellow), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
-    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc("jeremy"), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
+    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc(SpriteType::Jeremy), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
-    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc("block"), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
+    [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Npc(SpriteType::Block), Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],
     [Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Ground, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty, Tile::Empty],

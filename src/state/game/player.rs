@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::controls::Controls;
+use crate::sprite::SpriteType;
 
 use super::direction::Direction;
 use super::hitbox::{PlayerGroundHitbox, PlayerEnemyHitbox};
@@ -63,15 +64,15 @@ impl PlayerCharacter {
             self.state = State::Idle;
         }
     }
-    pub fn update_spritesheet(&mut self) -> Option<&str> {
+    pub fn update_spritesheet(&mut self) -> Option<SpriteType> {
         if self.state == self.previous_state {
             return None;
         }
         self.previous_state = self.state;
         let spritesheet = match self.state {
-            State::Idle => "green idle",
-            State::Walking => "green walk",
-            State::InTheAir(_) => "green jump",
+            State::Idle => SpriteType::IdleGreen,
+            State::Walking => SpriteType::WalkGreen,
+            State::InTheAir(_) => SpriteType::JumpGreen,
         };
         Some(spritesheet)
     }

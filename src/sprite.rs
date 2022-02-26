@@ -1,11 +1,14 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 use bevy::prelude::*;
 use bevy::asset::HandleId;
+use crate::sprite::SpriteVariant::Sprite;
 
 #[derive(Default)]
 pub struct SpriteHandles {
-    pub handles: HashMap<&'static str, Vec<Handle<Image>>>,
+    pub handles: HashMap<String, Vec<Handle<Image>>>,
 }
 
 impl SpriteHandles {
@@ -32,133 +35,226 @@ impl SpriteTimer {
 #[derive(Clone)]
 pub enum SpriteVariant {
     Sprite(&'static str),
-    SpriteSheet(&'static str)
+    SpriteSheet(SpriteType)
+}
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
+pub enum SpriteType {
+    BlueBG,
+    BrownBG,
+    WhiteBG,
+    GreenBG,
+    IdleGreen,
+    WalkGreen,
+    JumpGreen,
+    Blue,
+    Pink,
+    Yellow,
+    Beige,
+    SpikeBall,
+    Fish,
+    Block,
+    Hedgehog,
+    BabyJeremy,
+    Jeremy,
+    Angel,
+    Ground,
+    Heart,
+}
+
+impl FromStr for SpriteType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BlueBG" => Ok(SpriteType::BlueBG),
+            "BrownBG" => Ok(SpriteType::BrownBG),
+            "WhiteBG" => Ok(SpriteType::WhiteBG),
+            "GreenBG" => Ok(SpriteType::GreenBG),
+            "IdleGreen" => Ok(SpriteType::IdleGreen),
+            "WalkGreen" => Ok(SpriteType::WalkGreen),
+            "JumpGreen" => Ok(SpriteType::JumpGreen),
+            "Blue" => Ok(SpriteType::Blue),
+            "Pink" => Ok(SpriteType::Pink),
+            "Yellow" => Ok(SpriteType::Yellow),
+            "Beige" => Ok(SpriteType::Beige),
+            "SpikeBall" => Ok(SpriteType::SpikeBall),
+            "Fish" => Ok(SpriteType::Fish),
+            "Block" => Ok(SpriteType::Block),
+            "Hedgehog" => Ok(SpriteType::Hedgehog),
+            "BabyJeremy" => Ok(SpriteType::BabyJeremy),
+            "Jeremy" => Ok(SpriteType::Jeremy),
+            "Angel" => Ok(SpriteType::Angel),
+            "Ground" => Ok(SpriteType::Ground),
+            "Heart" => Ok(SpriteType::Heart),
+            _ => Err(()),
+        }
+    }
+}
+
+impl fmt::Display for SpriteType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
+pub enum SpriteTypeStates {
+    Empty,
+    Half,
+    Full,
+    Closed,
+    Open,
+    Idle,
+    Idle0,
+    Idle1,
+    Idle2,
+    Surprised,
+    Pissed,
+    AloneGrass,
+    RightGrass,
+    LeftRightGrass,
+    LeftGrass,
+    DownGrass,
+    DownGrassRight,
+    DownGrassLeftRight,
+    DownGrassLeft,
+    Above,
+    LeftAbove,
+    RightAbove,
+    BelowAbove,
+    RightEmpty,
+    LeftEmpty,
+    BelowEmpty,
+    BelowLeftEmpty,
+    BelowRightEmpty,
+    AboveLeftEmpty,
+    AboveRightEmpty,
 }
 
 lazy_static!{
 //TODO: maybe use enums instead of strings lol
-pub static ref SPRITES: HashMap<&'static str, HashMap<&'static str, &'static str>> = HashMap::from([
-    ("blue background", HashMap::from([
-        ("empty", "pixel-platformer/Background/background_0000.png"),
-        ("half", "pixel-platformer/Background/background_0001.png"),
-        ("full", "pixel-platformer/Background/background_0002.png"),
+pub static ref SPRITES: HashMap<SpriteType, HashMap<SpriteTypeStates, &'static str>> = HashMap::from([
+    (SpriteType::BlueBG, HashMap::from([
+        (SpriteTypeStates::Empty, "pixel-platformer/Background/background_0000.png"),
+        (SpriteTypeStates::Half, "pixel-platformer/Background/background_0001.png"),
+        (SpriteTypeStates::Full, "pixel-platformer/Background/background_0002.png"),
     ])),
-    ("brown background", HashMap::from([
-        ("empty", "pixel-platformer/Background/background_0003.png"),
-        ("half", "pixel-platformer/Background/background_0004.png"),
-        ("full", "pixel-platformer/Background/background_0005.png"),
+    (SpriteType::BrownBG, HashMap::from([
+        (SpriteTypeStates::Empty, "pixel-platformer/Background/background_0003.png"),
+        (SpriteTypeStates::Half, "pixel-platformer/Background/background_0004.png"),
+        (SpriteTypeStates::Full, "pixel-platformer/Background/background_0005.png"),
     ])),
-    ("white background", HashMap::from([
-        ("empty", "pixel-platformer/Background/background_0006.png"),
-        ("half", "pixel-platformer/Background/background_0007.png"),
-        ("full", "pixel-platformer/Background/background_0008.png"),
+    (SpriteType::WhiteBG, HashMap::from([
+        (SpriteTypeStates::Empty, "pixel-platformer/Background/background_0006.png"),
+        (SpriteTypeStates::Half, "pixel-platformer/Background/background_0007.png"),
+        (SpriteTypeStates::Full, "pixel-platformer/Background/background_0008.png"),
     ])),
-    ("green background", HashMap::from([
-        ("empty", "pixel-platformer/Background/background_0009.png"),
-        ("half", "pixel-platformer/Background/background_0010.png"),
-        ("full", "pixel-platformer/Background/background_0011.png"),
+    (SpriteType::GreenBG, HashMap::from([
+        (SpriteTypeStates::Empty, "pixel-platformer/Background/background_0009.png"),
+        (SpriteTypeStates::Half, "pixel-platformer/Background/background_0010.png"),
+        (SpriteTypeStates::Full, "pixel-platformer/Background/background_0011.png"),
     ])),
-    ("green idle", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0000.png"),
+    (SpriteType::IdleGreen, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0000.png"),
     ])),
-    ("green walk", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0000.png"),
-        ("open", "pixel-platformer/Characters/character_0001.png"),
+    (SpriteType::WalkGreen, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0000.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0001.png"),
     ])),
-    ("green jump", HashMap::from([
-        ("open", "pixel-platformer/Characters/character_0001.png"),
+    (SpriteType::JumpGreen, HashMap::from([
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0001.png"),
     ])),
-    ("blue", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0002.png"),
-        ("open", "pixel-platformer/Characters/character_0003.png"),
+    (SpriteType::Blue, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0002.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0003.png"),
     ])),
-    ("pink", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0004.png"),
-        ("open", "pixel-platformer/Characters/character_0005.png"),
+    (SpriteType::Pink, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0004.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0005.png"),
     ])),
-    ("yellow", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0006.png"),
-        ("open", "pixel-platformer/Characters/character_0007.png"),
+    (SpriteType::Yellow, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0006.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0007.png"),
     ])),
-    ("spike ball", HashMap::from([
-        ("idle", "pixel-platformer/Characters/character_0008.png"),
+    (SpriteType::SpikeBall, HashMap::from([
+        (SpriteTypeStates::Idle, "pixel-platformer/Characters/character_0008.png"),
     ])),
-    ("beige", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0009.png"),
-        ("open", "pixel-platformer/Characters/character_0010.png"),
+    (SpriteType::Beige, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0009.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0010.png"),
     ])),
-    ("fish", HashMap::from([
-        ("closed", "pixel-platformer/Characters/character_0011.png"),
-        ("open", "pixel-platformer/Characters/character_0012.png"),
+    (SpriteType::Fish, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0011.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0012.png"),
     ])),
-    ("block", HashMap::from([
-        ("surprised", "pixel-platformer/Characters/character_0013.png"),
-        ("pissed", "pixel-platformer/Characters/character_0014.png"),
+    (SpriteType::Block, HashMap::from([
+        (SpriteTypeStates::Surprised, "pixel-platformer/Characters/character_0013.png"),
+        (SpriteTypeStates::Pissed, "pixel-platformer/Characters/character_0014.png"),
     ])),
-    ("hedgehog", HashMap::from([
-        ("idle0", "pixel-platformer/Characters/character_0015.png"),
-        ("idle1", "pixel-platformer/Characters/character_0016.png"),
-        ("idle2", "pixel-platformer/Characters/character_0017.png"),
+    (SpriteType::Hedgehog, HashMap::from([
+        (SpriteTypeStates::Idle0, "pixel-platformer/Characters/character_0015.png"),
+        (SpriteTypeStates::Idle1, "pixel-platformer/Characters/character_0016.png"),
+        (SpriteTypeStates::Idle2, "pixel-platformer/Characters/character_0017.png"),
     ])),
-    ("baby jeremy", HashMap::from([
-        ("idle0", "pixel-platformer/Characters/character_0018.png"),
-        ("idle1", "pixel-platformer/Characters/character_0019.png"),
-        ("idle2", "pixel-platformer/Characters/character_0020.png"),
+    (SpriteType::BabyJeremy, HashMap::from([
+        (SpriteTypeStates::Idle0, "pixel-platformer/Characters/character_0018.png"),
+        (SpriteTypeStates::Idle1, "pixel-platformer/Characters/character_0019.png"),
+        (SpriteTypeStates::Idle0, "pixel-platformer/Characters/character_0020.png"),
     ])),
-    ("jeremy", HashMap::from([
-        ("idle0", "pixel-platformer/Characters/character_0021.png"),
-        ("idle1", "pixel-platformer/Characters/character_0022.png"),
-        ("idle2", "pixel-platformer/Characters/character_0023.png"),
+    (SpriteType::Jeremy, HashMap::from([
+        (SpriteTypeStates::Idle0, "pixel-platformer/Characters/character_0021.png"),
+        (SpriteTypeStates::Idle1, "pixel-platformer/Characters/character_0022.png"),
+        (SpriteTypeStates::Idle2, "pixel-platformer/Characters/character_0023.png"),
     ])),
-    ("angel", HashMap::from([
-        ("idle0", "pixel-platformer/Characters/character_0024.png"),
-        ("idle1", "pixel-platformer/Characters/character_0025.png"),
-        ("idle2", "pixel-platformer/Characters/character_0026.png"),
+    (SpriteType::Angel, HashMap::from([
+        (SpriteTypeStates::Idle0, "pixel-platformer/Characters/character_0024.png"),
+        (SpriteTypeStates::Idle1, "pixel-platformer/Characters/character_0025.png"),
+        (SpriteTypeStates::Idle2, "pixel-platformer/Characters/character_0026.png"),
     ])),
-    ("ground", HashMap::from([
-        ("grass alone", "pixel-platformer/Tiles/tile_0000.png"),
-        ("grass right", "pixel-platformer/Tiles/tile_0001.png"),
-        ("grass left right", "pixel-platformer/Tiles/tile_0002.png"),
-        ("grass left", "pixel-platformer/Tiles/tile_0003.png"),
-        ("grass down", "pixel-platformer/Tiles/tile_0020.png"),
-        ("grass down right", "pixel-platformer/Tiles/tile_0021.png"),
-        ("grass down left right", "pixel-platformer/Tiles/tile_0022.png"),
-        ("grass down left", "pixel-platformer/Tiles/tile_0023.png"),
-        ("full", "pixel-platformer/Tiles/tile_0122.png"),
-        ("above", "pixel-platformer/Tiles/tile_0140.png"),
-        ("above left", "pixel-platformer/Tiles/tile_0143.png"),
-        ("above right", "pixel-platformer/Tiles/tile_0141.png"),
-        ("above below", "pixel-platformer/Tiles/tile_0120.png"),
-        ("left empty", "pixel-platformer/Tiles/tile_0121.png"),
-        ("right empty", "pixel-platformer/Tiles/tile_0123.png"),
-        ("below empty", "pixel-platformer/Tiles/tile_0142.png"),
-        ("below left empty", "pixel-platformer/Tiles/tile_0005.png"),
-        ("below right empty", "pixel-platformer/Tiles/tile_0004.png"),
-        ("above left empty", "pixel-platformer/Tiles/tile_0025.png"),
-        ("above right empty", "pixel-platformer/Tiles/tile_0024.png"),
+    (SpriteType::Ground, HashMap::from([
+        (SpriteTypeStates::AloneGrass, "pixel-platformer/Tiles/tile_0000.png"),
+        (SpriteTypeStates::RightGrass, "pixel-platformer/Tiles/tile_0001.png"),
+        (SpriteTypeStates::LeftRightGrass, "pixel-platformer/Tiles/tile_0002.png"),
+        (SpriteTypeStates::LeftGrass, "pixel-platformer/Tiles/tile_0003.png"),
+        (SpriteTypeStates::DownGrass, "pixel-platformer/Tiles/tile_0020.png"),
+        (SpriteTypeStates::DownGrassRight, "pixel-platformer/Tiles/tile_0021.png"),
+        (SpriteTypeStates::DownGrassLeftRight, "pixel-platformer/Tiles/tile_0022.png"),
+        (SpriteTypeStates::DownGrassLeft, "pixel-platformer/Tiles/tile_0023.png"),
+        (SpriteTypeStates::Full, "pixel-platformer/Tiles/tile_0122.png"),
+        (SpriteTypeStates::Above, "pixel-platformer/Tiles/tile_0140.png"),
+        (SpriteTypeStates::LeftAbove, "pixel-platformer/Tiles/tile_0143.png"),
+        (SpriteTypeStates::RightAbove, "pixel-platformer/Tiles/tile_0141.png"),
+        (SpriteTypeStates::BelowAbove, "pixel-platformer/Tiles/tile_0120.png"),
+        (SpriteTypeStates::LeftEmpty, "pixel-platformer/Tiles/tile_0121.png"),
+        (SpriteTypeStates::RightEmpty, "pixel-platformer/Tiles/tile_0123.png"),
+        (SpriteTypeStates::BelowEmpty, "pixel-platformer/Tiles/tile_0142.png"),
+        (SpriteTypeStates::BelowLeftEmpty, "pixel-platformer/Tiles/tile_0005.png"),
+        (SpriteTypeStates::BelowRightEmpty, "pixel-platformer/Tiles/tile_0004.png"),
+        (SpriteTypeStates::AboveLeftEmpty, "pixel-platformer/Tiles/tile_0025.png"),
+        (SpriteTypeStates::AboveRightEmpty, "pixel-platformer/Tiles/tile_0024.png"),
     ])),
-    ("heart", HashMap::from([
-        ("full", "pixel-platformer/Tiles/tile_0044.png"),
-        ("half", "pixel-platformer/Tiles/tile_0045.png"),
-        ("empty", "pixel-platformer/Tiles/tile_0046.png"),
+    (SpriteType::Heart, HashMap::from([
+        (SpriteTypeStates::Full, "pixel-platformer/Tiles/tile_0044.png"),
+        (SpriteTypeStates::Half, "pixel-platformer/Tiles/tile_0045.png"),
+        (SpriteTypeStates::Empty, "pixel-platformer/Tiles/tile_0046.png"),
     ])),
 ]);
 }
 
-pub fn load_sprites(name: &str, asset_server: &Res<AssetServer>) -> Vec<Handle<Image>> {
-    SPRITES[name].iter().map(
+pub fn load_sprites(name: SpriteType, asset_server: &Res<AssetServer>) -> Vec<Handle<Image>> {
+    SPRITES[&name].iter().map(
             |(_, &path)| asset_server.load(path)
         ).collect()
 }
 
 pub fn spawn(
-    name: &str,
+    name: String,
     sprite_handles: &Res<SpriteHandles>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
     textures: &mut ResMut<Assets<Image>>,
 ) -> Handle<TextureAtlas> {
     let mut texture_atlas_builder = TextureAtlasBuilder::default();
-    for handle in sprite_handles.handles[name].iter() {
+    for handle in sprite_handles.handles[&name].iter() {
         let texture = textures.get(handle).unwrap();
         texture_atlas_builder.add_texture(handle.clone(), texture);
     }
