@@ -102,14 +102,21 @@ fn load_level(
                             ..Default::default()
                         });
                     },
+                    Tile::Rival => {
+                        entity.insert_bundle(RivalBundle {
+                            ground_hitbox: PlayerGroundHitbox(hitbox),
+                            velocity: Velocity(Vec3::new(10.0, 0.0, 0.0)),
+                            ..Default::default()
+                        })
+                            .with_children(|parent| {
+                                parent.spawn_bundle(SpriteBundle {
+                                    texture: asset_server.get_handle("torch-light-effect.png"),
+                                    ..Default::default()
+                                });
+                            });
+                    }
                     Tile::Blue => {
                         entity.insert(EnemyHitbox(hitbox));
-                        entity.with_children(|parent| {
-                            parent.spawn_bundle(SpriteBundle {
-                                texture: asset_server.get_handle("torch-light-effect.png"),
-                                ..Default::default()
-                            });
-                        });
                     },
                     Tile::Npc(_) => {
                         todo!()
@@ -144,7 +151,7 @@ fn player_spritesheet(
     sprite_handles: Res<SpriteHandles>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
-    mut query: Query<(&mut PlayerCharacter, &mut TextureAtlasSprite, &mut Handle<TextureAtlas>)>,
+    mut query: Query<(&mut Character, &mut TextureAtlasSprite, &mut Handle<TextureAtlas>)>,
 ) {
     for (mut player, mut sprite, mut texture_atlas_handle) in query.iter_mut() {
         if let Some(sheet) = player.update_spritesheet() {
@@ -156,7 +163,7 @@ fn player_spritesheet(
 
 fn input(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut PlayerCharacter, &Controls, &mut Velocity, &mut direction::Direction)>,
+    mut query: Query<(&mut Character, &Controls, &mut Velocity, &mut direction::Direction)>,
 ) {
     for (mut player, controls, mut velocity, mut direction) in query.iter_mut() {
         let new_direction = direction::Direction::from_input(input.pressed(controls.left), input.pressed(controls.right));
@@ -186,8 +193,8 @@ fn movement(
 
 fn camera_movement(
     windows: Res<Windows>,
-    player_query: Query<(&PlayerCharacter, &Transform)>,
-    mut camera_query: Query<(&MainCamera, &mut Transform), Without<PlayerCharacter>>,
+    player_query: Query<(&Player, &Transform)>,
+    mut camera_query: Query<(&MainCamera, &mut Transform), Without<Player>>,
 ) {
     let window = windows.get_primary().unwrap();
     let horizontal_limit = window.width() * 0.3;
@@ -209,7 +216,7 @@ fn camera_movement(
 
 fn player_ground_collision(
     ground_query: Query<(&GroundHitbox, &Transform), Without<PlayerGroundHitbox>>,
-    mut player_query: Query<(&mut PlayerCharacter, &PlayerGroundHitbox, &mut Transform, &mut Velocity), Without<GroundHitbox>>,
+    mut player_query: Query<(&mut Character, &PlayerGroundHitbox, &mut Transform, &mut Velocity), Without<GroundHitbox>>,
 ) {
     for (mut player, player_hitbox, mut player_transform, mut player_velocity) in player_query.iter_mut() {
         for (ground_hitbox, ground_transform) in ground_query.iter() {
@@ -244,7 +251,7 @@ fn player_enemy_collision(
     mut state: ResMut<State<AppState>>,
     mut commands: Commands,
     enemy_query: Query<(Entity, &EnemyHitbox, &Transform), Without<PlayerGroundHitbox>>,
-    mut player_query: Query<(&PlayerCharacter, &PlayerGroundHitbox, &Transform, &mut Velocity), Without<GroundHitbox>>,
+    mut player_query: Query<(&Character, &PlayerEnemyHitbox, &Transform, &mut Velocity), Without<GroundHitbox>>,
 ) {
     for (_, player_hitbox, player_transform, mut player_velocity) in player_query.iter_mut() {
         for (enemy_id, enemy_hitbox, enemy_transform) in enemy_query.iter() {
@@ -252,7 +259,7 @@ fn player_enemy_collision(
                 match collision.collision_type {
                     CollisionType::Bottom => {
                         //TODO: change player and enemy states so that some animation plays or there is a chance to jump again or something
-                        commands.entity(enemy_id).despawn_recursive();
+                        commands.entity(enemy_id).despawn();
                         player_velocity.0.y *= -1.0;
                     },
                     _ => { state.set(AppState::GameOver).unwrap(); },
@@ -265,8 +272,8 @@ fn player_enemy_collision(
 fn out_of_bounds(
     mut state: ResMut<State<AppState>>,
     windows: Res<Windows>,
-    player_query: Query<(&PlayerCharacter, &Transform)>,
-    camera_query: Query<(&MainCamera, &Transform), Without<PlayerCharacter>>,
+    player_query: Query<(&Character, &Transform)>,
+    camera_query: Query<(&MainCamera, &Transform), Without<Character>>,
 ) {
     let (_, camera_position) = camera_query.single();
 

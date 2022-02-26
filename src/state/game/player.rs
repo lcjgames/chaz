@@ -7,12 +7,24 @@ use super::direction::Direction;
 use super::hitbox::{PlayerGroundHitbox, PlayerEnemyHitbox};
 use super::velocity::Velocity;
 
+#[derive(Component, Default)]
+pub struct Player;
+
 #[derive(Bundle, Default)]
 pub struct PlayerBundle {
-    pub player_character: PlayerCharacter,
+    pub player: Player,
+    pub character: Character,
     pub controls: Controls,
     pub ground_hitbox: PlayerGroundHitbox,
     pub enemy_hitbox: PlayerEnemyHitbox,
+    pub velocity: Velocity,
+    pub direction: Direction,
+}
+
+#[derive(Bundle, Default)]
+pub struct RivalBundle {
+    pub character: Character,
+    pub ground_hitbox: PlayerGroundHitbox,
     pub velocity: Velocity,
     pub direction: Direction,
 }
@@ -26,12 +38,12 @@ enum State {
 }
 
 #[derive(Component, Default)]
-pub struct PlayerCharacter {
+pub struct Character {
     state: State,
     previous_state: State,
 }
 
-impl PlayerCharacter {
+impl Character {
     const MAX_JUMP_COUNT: u8 = 2;
     fn get_jump_count(&self) -> u8 {
         if let State::InTheAir(jump_count) = self.state {
