@@ -25,8 +25,8 @@ impl Plugin for Loading {
 }
 
 fn load_preloaded_textures(mut sprite_handles: ResMut<SpriteHandles>, asset_server: Res<AssetServer>) {
-    let handles = load_sprites("heart", &asset_server);
-    sprite_handles.handles.insert("loading", handles);
+    let handles = load_sprites(SpriteType::Heart, &asset_server);
+    sprite_handles.handles.insert("loading".to_string(), handles);
 }
 
 fn check_preloaded_textures(
@@ -52,7 +52,7 @@ fn setup_loading_bar(
     mut textures: ResMut<Assets<Image>>,
 ) {
     let texture_atlas= spawn(
-        "loading",
+        "loading".to_string(),
         &sprite_handles,
         &mut texture_atlases,
         &mut textures,
@@ -74,12 +74,14 @@ fn setup_loading_bar(
 }
 
 fn load_textures(mut sprite_handles: ResMut<SpriteHandles>, asset_server: Res<AssetServer>) {
-    let mut load = |name| {
+    let mut load = |name: SpriteType| {
         let handles = load_sprites(name, &asset_server);
-        sprite_handles.handles.insert(name, handles);
+        sprite_handles.handles.insert(name.to_string(), handles);
     };
     for (key, _) in SPRITES.iter() {
-        load(key);
+        use std::str::FromStr;
+        let s = key.to_string();
+        load(SpriteType::from_str(&s).unwrap());
     }
 }
 
