@@ -78,10 +78,8 @@ fn load_textures(mut sprite_handles: ResMut<SpriteHandles>, asset_server: Res<As
         let handles = load_sprites(name, &asset_server);
         sprite_handles.handles.insert(name.to_string(), handles);
     };
-    for (key, _) in SPRITES.iter() {
-        use std::str::FromStr;
-        let s = key.to_string();
-        load(SpriteType::from_str(&s).unwrap());
+    for (&key, _) in SPRITES.iter() {
+        load(key);
     }
 }
 

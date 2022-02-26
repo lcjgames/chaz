@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::str::FromStr;
 
 use bevy::prelude::*;
 use bevy::asset::HandleId;
-use crate::sprite::SpriteVariant::Sprite;
 
 #[derive(Default)]
 pub struct SpriteHandles {
@@ -59,36 +57,7 @@ pub enum SpriteType {
     Angel,
     Ground,
     Heart,
-}
-
-impl FromStr for SpriteType {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "BlueBG" => Ok(SpriteType::BlueBG),
-            "BrownBG" => Ok(SpriteType::BrownBG),
-            "WhiteBG" => Ok(SpriteType::WhiteBG),
-            "GreenBG" => Ok(SpriteType::GreenBG),
-            "IdleGreen" => Ok(SpriteType::IdleGreen),
-            "WalkGreen" => Ok(SpriteType::WalkGreen),
-            "JumpGreen" => Ok(SpriteType::JumpGreen),
-            "Blue" => Ok(SpriteType::Blue),
-            "Pink" => Ok(SpriteType::Pink),
-            "Yellow" => Ok(SpriteType::Yellow),
-            "Beige" => Ok(SpriteType::Beige),
-            "SpikeBall" => Ok(SpriteType::SpikeBall),
-            "Fish" => Ok(SpriteType::Fish),
-            "Block" => Ok(SpriteType::Block),
-            "Hedgehog" => Ok(SpriteType::Hedgehog),
-            "BabyJeremy" => Ok(SpriteType::BabyJeremy),
-            "Jeremy" => Ok(SpriteType::Jeremy),
-            "Angel" => Ok(SpriteType::Angel),
-            "Ground" => Ok(SpriteType::Ground),
-            "Heart" => Ok(SpriteType::Heart),
-            _ => Err(()),
-        }
-    }
+    Torchlight,
 }
 
 impl fmt::Display for SpriteType {
@@ -237,6 +206,9 @@ pub static ref SPRITES: HashMap<SpriteType, HashMap<SpriteTypeStates, &'static s
         (SpriteTypeStates::Full, "pixel-platformer/Tiles/tile_0044.png"),
         (SpriteTypeStates::Half, "pixel-platformer/Tiles/tile_0045.png"),
         (SpriteTypeStates::Empty, "pixel-platformer/Tiles/tile_0046.png"),
+    ])),
+    (SpriteType::Torchlight, HashMap::from([
+        (SpriteTypeStates::Full, "torch-light-effect.png"),
     ])),
 ]);
 }

@@ -102,7 +102,15 @@ fn load_level(
                             ..Default::default()
                         });
                     },
-                    Tile::Blue => { entity.insert(EnemyHitbox(hitbox)); },
+                    Tile::Blue => {
+                        entity.insert(EnemyHitbox(hitbox));
+                        entity.with_children(|parent| {
+                            parent.spawn_bundle(SpriteBundle {
+                                texture: asset_server.get_handle("torch-light-effect.png"),
+                                ..Default::default()
+                            });
+                        });
+                    },
                     Tile::Npc(_) => {
                         todo!()
                     },
@@ -244,7 +252,7 @@ fn player_enemy_collision(
                 match collision.collision_type {
                     CollisionType::Bottom => {
                         //TODO: change player and enemy states so that some animation plays or there is a chance to jump again or something
-                        commands.entity(enemy_id).despawn();
+                        commands.entity(enemy_id).despawn_recursive();
                         player_velocity.0.y *= -1.0;
                     },
                     _ => { state.set(AppState::GameOver).unwrap(); },
