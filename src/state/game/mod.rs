@@ -328,8 +328,17 @@ fn update_rival_position(
 fn print_player_position(
     query: Query<(&Player,  &Positions)>,
 ) {
+    //Copy and paste this output into the map
+    //TODO: a more sophisticated way to do this
     use crate::log::*;
     for (_, positions) in query.iter() {
-        console_log!("{:?}", positions);
+        console_log!("rival_positions: Positions {{");
+        console_log!("values: vec![");
+        for position in positions.values.iter() {
+            console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
+        }
+        console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
+        console_log!("timer: Timer::from_seconds({}, true),", positions.timer.duration().as_secs_f32());
+        console_log!("}}");
     }
 }
