@@ -101,6 +101,7 @@ fn load_level(
                 match tile_info.tile_type {
                     Tile::Empty => panic!("Not possible to have a hitbox on an empty tile"),
                     Tile::Ground => { entity.insert(GroundHitbox(hitbox)); },
+                    Tile::Win => { entity.insert( WinHitbox(hitbox) ); },
                     Tile::Player => {
                         entity.insert_bundle(PlayerBundle {
                             ground_hitbox: PlayerGroundHitbox(hitbox.clone()),
