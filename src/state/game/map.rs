@@ -431,3 +431,12 @@ pub fn read_map() -> Map {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct RivalPositions(pub Positions);
+
+impl Default for RivalPositions {
+    fn default() -> Self {
+        Self(read_map().rival_positions)
+    }
+}

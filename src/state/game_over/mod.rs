@@ -22,7 +22,7 @@ fn show_text(
     asset_server: Res<AssetServer>,
     camera_query: Query<(&MainCamera, &Transform)>,
 ) {
-    let game_over: GameOverEvent = game_over.iter().next().cloned().unwrap_or_default(); //TODO: if there's more than one game over in the same frame, I don't know if the second one will be stored until the next game over
+    let game_over: GameOverEvent = game_over.iter().next().cloned().unwrap_or_default(); //if there's more than one game over in the same frame, the other ones are discarded
     let camera_position = camera_query.single().1.translation;
     let text_style = TextStyle {
         font: asset_server.load("kenney-fonts/Fonts/Kenney Blocks.ttf"),

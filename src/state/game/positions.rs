@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-#[derive(Component, Debug)]
+#[derive(Clone, Component, Debug)]
 pub struct Positions {
     pub values: VecDeque::<Vec3>,
     pub timer: Timer,

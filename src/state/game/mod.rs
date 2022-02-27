@@ -27,6 +27,7 @@ pub struct Game;
 impl Plugin for Game {
     fn build(&self, app: &mut App) {
         app
+            .init_resource::<RivalPositions>()
             .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_background))
             .add_system_set(SystemSet::on_enter(AppState::Game).with_system(load_level))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(animation))
@@ -40,8 +41,7 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(record_player_position))
-            .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_rival_position))
-            .add_system_set(SystemSet::on_exit(AppState::Game).with_system(print_player_position)); //TODO: better way to remember the positions
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_rival_position));
     }
 }
 
@@ -68,6 +68,7 @@ fn spawn_background(
 }
 
 fn load_level(
+    rival_positions: Res<RivalPositions>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     sprite_handles: Res<SpriteHandles>,
@@ -112,7 +113,7 @@ fn load_level(
                     },
                     Tile::Rival => {
                         entity.insert_bundle(RivalBundle {
-                            positions: read_map().rival_positions, //TODO: remove second call to read_map()
+                            positions: rival_positions.0.clone(),
                             ..Default::default()
                         })
                             .with_children(|parent| {
@@ -121,7 +122,7 @@ fn load_level(
                                     ..Default::default()
                                 });
                             });
-                    }
+                    },
                     Tile::Blue => {
                         entity.insert(EnemyHitbox(hitbox));
                     },
@@ -284,14 +285,33 @@ fn player_enemy_collision(
 }
 
 fn check_win(
+    mut rival_positions: ResMut<RivalPositions>,
     mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
-    player_query: Query<(&Player, &PlayerGroundHitbox, &Transform)>,
+    player_query: Query<(&Player, &PlayerGroundHitbox, &Transform, &Positions)>,
     win_tile_query: Query<(&WinHitbox, &Transform), Without<Player>>,
 ) {
-    for (_, player_hitbox, player_transform) in player_query.iter() {
+    for (_, player_hitbox, player_transform, player_positions) in player_query.iter() {
         for (win_hitbox, win_transform) in win_tile_query.iter() {
             if let Some(_) = player_hitbox.0.collide(&player_transform.translation, &win_hitbox.0, &win_transform.translation) {
+                rival_positions.0 = Positions {
+                    values: player_positions.values.iter().map(|p| *p - Vec3::new(0.0, 0.0, 1.0)).collect(),
+                    ..Default::default()
+                };
+                //To change the hardcoded path, uncomment the code below,
+                //then copy and paste this output into the map
+                //TODO: a more sophisticated way to do this
+                /*
+                use crate::log::*;
+                console_log!("rival_positions: Positions {{");
+                console_log!("values: vec![");
+                for position in positions.values.iter() {
+                    console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
+                }
+                console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
+                console_log!("timer: Timer::from_seconds({}, true),", positions.timer.duration().as_secs_f32());
+                console_log!("}}");
+                */
                 game_over.send(GameOverEvent {
                     main_message: "You\nwin".to_string(),
                     ..Default::default()
@@ -357,25 +377,10 @@ fn update_rival_position(
             positions.values.pop_front().unwrap()
         } else {
             let proportion = positions.timer.elapsed_secs() / positions.timer.duration().as_secs_f32();
+            // use crate::log::*;
+            // console_log!("elapsed = {}, duration = {}, proportion = {}", positions.timer.elapsed_secs(), positions.timer.duration().as_secs_f32(), proportion);
+            //TODO: bug! when timer duration is large, you can see the character is not transitioning smoothly
             proportion*positions.values[0] + (1.0-proportion)*transform.translation
         }
-    }
-}
-
-fn print_player_position(
-    query: Query<(&Player,  &Positions)>,
-) {
-    //Copy and paste this output into the map
-    //TODO: a more sophisticated way to do this
-    use crate::log::*;
-    for (_, positions) in query.iter() {
-        console_log!("rival_positions: Positions {{");
-        console_log!("values: vec![");
-        for position in positions.values.iter() {
-            console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
-        }
-        console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
-        console_log!("timer: Timer::from_seconds({}, true),", positions.timer.duration().as_secs_f32());
-        console_log!("}}");
     }
 }
