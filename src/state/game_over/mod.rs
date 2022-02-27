@@ -76,7 +76,7 @@ fn show_button(
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
                 text: Text::with_section(
-                    "Restart",
+                    "Retry",
                     TextStyle {
                         font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
                         font_size: 40.0,
