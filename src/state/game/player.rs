@@ -5,6 +5,7 @@ use crate::sprite::SpriteType;
 
 use super::direction::Direction;
 use super::hitbox::{PlayerGroundHitbox, PlayerEnemyHitbox};
+use super::positions::Positions;
 use super::velocity::Velocity;
 
 #[derive(Component, Default)]
@@ -19,14 +20,18 @@ pub struct PlayerBundle {
     pub enemy_hitbox: PlayerEnemyHitbox,
     pub velocity: Velocity,
     pub direction: Direction,
+    pub positions: Positions,
 }
+
+#[derive(Component, Default)]
+pub struct Rival;
 
 #[derive(Bundle, Default)]
 pub struct RivalBundle {
+    pub rival: Rival,
     pub character: Character,
-    pub ground_hitbox: PlayerGroundHitbox,
-    pub velocity: Velocity,
     pub direction: Direction,
+    pub positions: Positions,
 }
 
 #[derive(Clone, Copy, Default, PartialEq)]

@@ -16,6 +16,9 @@ use map::*;
 mod player;
 use player::*;
 
+mod positions;
+use positions::*;
+
 mod velocity;
 use velocity::*;
 
@@ -34,7 +37,10 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(player_enemy_collision))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
-            .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds));
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(record_player_position))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_rival_position))
+            .add_system_set(SystemSet::on_exit(AppState::Game).with_system(print_player_position)); //TODO: better way to remember the positions
     }
 }
 
@@ -104,8 +110,7 @@ fn load_level(
                     },
                     Tile::Rival => {
                         entity.insert_bundle(RivalBundle {
-                            ground_hitbox: PlayerGroundHitbox(hitbox),
-                            velocity: Velocity(Vec3::new(10.0, 0.0, 0.0)),
+                            positions: read_map().rival_positions, //TODO: remove second call to read_map()
                             ..Default::default()
                         })
                             .with_children(|parent| {
@@ -284,5 +289,46 @@ fn out_of_bounds(
         if transform.translation.y < screen_bottom {
             state.set(AppState::GameOver).unwrap();
         }
+    }
+}
+
+fn record_player_position(
+    time: Res<Time>,
+    mut query: Query<(&Player, &Transform, &mut Positions)>,
+) {
+    for (_, transform, mut positions) in query.iter_mut() {
+        positions.timer.tick(time.delta());
+        if positions.timer.finished() {
+            positions.values.push_back(transform.translation);
+        }
+    }
+}
+
+fn update_rival_position(
+    time: Res<Time>,
+    mut query: Query<(&Rival, &mut Transform, &mut Positions)>,
+) {
+    for (_, mut transform, mut positions) in query.iter_mut() {
+        if positions.values.is_empty() {
+            return;
+        }
+        positions.timer.tick(time.delta());
+        if positions.timer.finished() {
+            if let Some(position) = positions.values.pop_front() {
+                transform.translation = position;
+            }
+        } else {
+            let proportion = positions.timer.elapsed_secs() / positions.timer.duration().as_secs_f32();
+            transform.translation = proportion*positions.values[0] + (1.0-proportion)*transform.translation;
+        }
+    }
+}
+
+fn print_player_position(
+    query: Query<(&Player,  &Positions)>,
+) {
+    use crate::log::*;
+    for (_, positions) in query.iter() {
+        console_log!("{:?}", positions);
     }
 }
