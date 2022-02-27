@@ -321,11 +321,13 @@ fn record_player_position(
 }
 
 fn update_rival_position(
+    mut state: ResMut<State<AppState>>,
     time: Res<Time>,
     mut query: Query<(&Rival, &mut Transform, &mut Positions)>,
 ) {
     for (_, mut transform, mut positions) in query.iter_mut() {
         if positions.values.is_empty() {
+            state.set(AppState::GameOver).unwrap();
             return;
         }
         positions.timer.tick(time.delta());
