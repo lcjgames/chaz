@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::camera::MainCamera;
 use crate::controls::Controls;
-use crate::state::AppState;
+use crate::state::{AppState, GameOverEvent};
 use crate::sprite::*;
 
 mod direction;
@@ -255,6 +255,7 @@ fn player_ground_collision(
 }
 
 fn player_enemy_collision(
+    mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     mut commands: Commands,
     enemy_query: Query<(Entity, &EnemyHitbox, &Transform), Without<PlayerGroundHitbox>>,
@@ -269,7 +270,13 @@ fn player_enemy_collision(
                         commands.entity(enemy_id).despawn();
                         player_velocity.0.y *= -1.0;
                     },
-                    _ => { state.set(AppState::GameOver).unwrap(); },
+                    _ => {
+                        game_over.send(GameOverEvent {
+                            secondary_message: Some("Killed by an enemy".to_string()),
+                            ..Default::default()
+                        });
+                        state.set(AppState::GameOver).unwrap();
+                    },
                 };
             }
         }
@@ -277,6 +284,7 @@ fn player_enemy_collision(
 }
 
 fn check_win(
+    mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     player_query: Query<(&Player, &PlayerGroundHitbox, &Transform)>,
     win_tile_query: Query<(&WinHitbox, &Transform), Without<Player>>,
@@ -284,6 +292,10 @@ fn check_win(
     for (_, player_hitbox, player_transform) in player_query.iter() {
         for (win_hitbox, win_transform) in win_tile_query.iter() {
             if let Some(_) = player_hitbox.0.collide(&player_transform.translation, &win_hitbox.0, &win_transform.translation) {
+                game_over.send(GameOverEvent {
+                    main_message: "You\nwin".to_string(),
+                    ..Default::default()
+                });
                 state.set(AppState::GameOver).unwrap();
             }
         }
@@ -291,6 +303,7 @@ fn check_win(
 }
 
 fn out_of_bounds(
+    mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     windows: Res<Windows>,
     player_query: Query<(&Character, &Transform)>,
@@ -303,6 +316,10 @@ fn out_of_bounds(
 
     for (_, transform) in player_query.iter() {
         if transform.translation.y < screen_bottom {
+            game_over.send(GameOverEvent {
+                secondary_message: Some("Fell from a great height".to_string()),
+                ..Default::default()
+            });
             state.set(AppState::GameOver).unwrap();
         }
     }
@@ -321,23 +338,26 @@ fn record_player_position(
 }
 
 fn update_rival_position(
+    mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     time: Res<Time>,
     mut query: Query<(&Rival, &mut Transform, &mut Positions)>,
 ) {
     for (_, mut transform, mut positions) in query.iter_mut() {
         if positions.values.is_empty() {
+            game_over.send(GameOverEvent {
+                secondary_message: Some("Your rival was faster".to_string()),
+                ..Default::default()
+            });
             state.set(AppState::GameOver).unwrap();
             return;
         }
         positions.timer.tick(time.delta());
-        if positions.timer.finished() {
-            if let Some(position) = positions.values.pop_front() {
-                transform.translation = position;
-            }
+        transform.translation = if positions.timer.finished() {
+            positions.values.pop_front().unwrap()
         } else {
             let proportion = positions.timer.elapsed_secs() / positions.timer.duration().as_secs_f32();
-            transform.translation = proportion*positions.values[0] + (1.0-proportion)*transform.translation;
+            proportion*positions.values[0] + (1.0-proportion)*transform.translation
         }
     }
 }
