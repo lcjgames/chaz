@@ -599,16 +599,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_starter_project"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "console_error_panic_hook",
- "lazy_static",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "bevy_tasks"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -876,6 +866,16 @@ name = "cfg_aliases"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
+
+[[package]]
+name = "chaz"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "console_error_panic_hook",
+ "lazy_static",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "clang-sys"

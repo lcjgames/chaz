@@ -1,7 +1,8 @@
 [package]
-name = "bevy_starter_project"
+name = "chaz"
 version = "0.1.0"
 edition = "2021"
+authors = ["Luiz Chagas Jardim <luizchagasjardim@gmail.com", "Jorge Sousa (he/him/his) <sousajo@gmail.com>"]
 
 [dependencies]
 bevy = "0.6"
