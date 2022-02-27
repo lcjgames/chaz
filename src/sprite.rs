@@ -44,7 +44,9 @@ pub enum SpriteType {
     IdleGreen,
     WalkGreen,
     JumpGreen,
-    Blue,
+    IdleBlue,
+    WalkBlue,
+    JumpBlue,
     Pink,
     Yellow,
     Beige,
@@ -133,8 +135,14 @@ pub static ref SPRITES: HashMap<SpriteType, HashMap<SpriteTypeStates, &'static s
     (SpriteType::JumpGreen, HashMap::from([
         (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0001.png"),
     ])),
-    (SpriteType::Blue, HashMap::from([
+    (SpriteType::IdleBlue, HashMap::from([
         (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0002.png"),
+    ])),
+    (SpriteType::WalkBlue, HashMap::from([
+        (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0002.png"),
+        (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0003.png"),
+    ])),
+    (SpriteType::JumpBlue, HashMap::from([
         (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0003.png"),
     ])),
     (SpriteType::Pink, HashMap::from([

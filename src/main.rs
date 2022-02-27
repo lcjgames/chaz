@@ -26,6 +26,7 @@ fn main() {
     console_log!("Starting Game!");
     App::new()
         .init_resource::<SpriteHandles>()
+        .add_event::<GameOverEvent>()
         .add_plugins(DefaultPlugins)
         .add_plugin(Loading)
         .add_plugin(Game)

@@ -89,6 +89,9 @@ pub struct PlayerGroundHitbox(pub Hitbox);
 pub struct GroundHitbox(pub Hitbox);
 
 #[derive(Component, Default)]
+pub struct WinHitbox(pub Hitbox);
+
+#[derive(Component, Default)]
 pub struct PlayerEnemyHitbox(pub Hitbox);
 
 #[derive(Component, Default)]

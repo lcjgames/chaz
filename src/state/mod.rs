@@ -7,6 +7,21 @@ pub enum AppState {
     Pause,
 }
 
+#[derive(Clone)]
+pub struct GameOverEvent {
+    main_message: String,
+    secondary_message: Option<String>,
+}
+
+impl Default for GameOverEvent {
+    fn default() -> Self {
+        Self {
+            main_message: "Game\nOver".to_string(),
+            secondary_message: None,
+        }
+    }
+}
+
 mod game;
 pub use game::Game;
 mod loading;
