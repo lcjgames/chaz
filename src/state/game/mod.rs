@@ -35,6 +35,7 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(input))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(player_ground_collision))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(player_enemy_collision))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(check_win))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
@@ -270,6 +271,20 @@ fn player_enemy_collision(
                     },
                     _ => { state.set(AppState::GameOver).unwrap(); },
                 };
+            }
+        }
+    }
+}
+
+fn check_win(
+    mut state: ResMut<State<AppState>>,
+    player_query: Query<(&Player, &PlayerGroundHitbox, &Transform)>,
+    win_tile_query: Query<(&WinHitbox, &Transform), Without<Player>>,
+) {
+    for (_, player_hitbox, player_transform) in player_query.iter() {
+        for (win_hitbox, win_transform) in win_tile_query.iter() {
+            if let Some(_) = player_hitbox.0.collide(&player_transform.translation, &win_hitbox.0, &win_transform.translation) {
+                state.set(AppState::GameOver).unwrap();
             }
         }
     }
