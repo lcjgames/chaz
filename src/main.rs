@@ -29,6 +29,7 @@ fn main() {
         .add_event::<GameOverEvent>()
         .add_plugins(DefaultPlugins)
         .add_plugin(Loading)
+        .add_plugin(Menu)
         .add_plugin(Game)
         .add_plugin(GameOver)
         .add_plugin(Pause)
