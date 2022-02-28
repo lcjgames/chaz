@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::button::Action;
+use crate::button::*;
 use crate::camera::MainCamera;
 use crate::screen::Screen;
 use crate::state::AppState;
@@ -13,17 +13,15 @@ impl Plugin for Menu {
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(title))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(title_animation))
-            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(play_button))
-            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(options_button))
+            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(show_menu_buttons))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(buttons))
             .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(ui_camera))
-            .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(back_button))
-            .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(level_0_button))
+            .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(show_level_select_buttons))
             .add_system_set(SystemSet::on_update(AppState::LevelSelect).with_system(buttons))
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::Options).with_system(ui_camera))
-            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(back_button))
+            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(show_option_buttons))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(buttons))
             .add_system_set(SystemSet::on_exit(AppState::Options).with_system(cleanup));
     }
@@ -96,159 +94,45 @@ fn title_animation(
     }
 }
 
-fn play_button(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>
-) {
-    commands
-        .spawn_bundle(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                margin: Rect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Action::ChangeState(AppState::LevelSelect))
-        .insert(Screen(AppState::Menu))
-        .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
-                text: Text::with_section(
-                    "Play",
-                    TextStyle {
-                        font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
-                        font_size: 40.0,
-                        color: Color::rgb(0.9, 0.9, 0.9),
-                    },
-                    Default::default(),
-                ),
-                ..Default::default()
-            })
-                .insert(Screen(AppState::Menu));
-        });
-}
-
-fn level_0_button(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>
-) {
-    commands
-        .spawn_bundle(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                margin: Rect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Action::ChangeState(AppState::Game))
-        .insert(Screen(AppState::LevelSelect))
-        .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
-                text: Text::with_section(
-                    "Level 0",
-                    TextStyle {
-                        font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
-                        font_size: 40.0,
-                        color: Color::rgb(0.9, 0.9, 0.9),
-                    },
-                    Default::default(),
-                ),
-                ..Default::default()
-            })
-                .insert(Screen(AppState::LevelSelect));
-        });
-}
-
-fn options_button(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>
-) {
-    commands
-        .spawn_bundle(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                margin: Rect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Action::ChangeState(AppState::Options))
-        .insert(Screen(AppState::Menu))
-        .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
-                text: Text::with_section(
-                    "Options",
-                    TextStyle {
-                        font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
-                        font_size: 40.0,
-                        color: Color::rgb(0.9, 0.9, 0.9),
-                    },
-                    Default::default(),
-                ),
-                ..Default::default()
-            })
-                .insert(Screen(AppState::Menu));
-        });
-}
-
-fn back_button(
+fn show_menu_buttons(
     state: Res<State<AppState>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>
 ) {
-    commands
-        .spawn_bundle(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                margin: Rect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Action::ChangeState(AppState::Menu))
-        .insert(Screen(*state.current()))
-        .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
-                text: Text::with_section(
-                    "Back",
-                    TextStyle {
-                        font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
-                        font_size: 40.0,
-                        color: Color::rgb(0.9, 0.9, 0.9),
-                    },
-                    Default::default(),
-                ),
-                ..Default::default()
-            })
-                .insert(Screen(*state.current()));
-        });
+    ButtonBuilder {
+        text: "Play",
+        action: Action::ChangeState(AppState::LevelSelect),
+    }.build(&mut commands, &asset_server, &state);
+    ButtonBuilder {
+        text: "Options",
+        action: Action::ChangeState(AppState::Options),
+    }.build(&mut commands, &asset_server, &state);
 }
 
-fn buttons(
-    mut state: ResMut<State<AppState>>,
-    mut query: Query<(&Interaction, &mut UiColor, &Action), (Changed<Interaction>, With<Button>)>,
+fn show_level_select_buttons(
+    state: Res<State<AppState>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>
 ) {
-    for (interaction, mut color, action) in query.iter_mut() {
-        *color = match *interaction {
-            Interaction::Hovered => Color::DARK_GRAY.into(),
-            Interaction::None => Color::rgb(0.15, 0.15, 0.15).into(),
-            Interaction::Clicked => {
-                match action {
-                    Action::ChangeState(screen) => { state.set(*screen).unwrap(); },
-                }
-                Color::DARK_GRAY.into()
-            },
-        }
-    }
+    ButtonBuilder {
+        text: "Back",
+        action: Action::ChangeState(AppState::Menu),
+    }.build(&mut commands, &asset_server, &state);
+    ButtonBuilder {
+        text: "Level 0",
+        action: Action::ChangeState(AppState::Game),
+    }.build(&mut commands, &asset_server, &state);
+}
+
+fn show_option_buttons(
+    state: Res<State<AppState>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>
+) {
+    ButtonBuilder {
+        text: "Back",
+        action: Action::ChangeState(AppState::Menu),
+    }.build(&mut commands, &asset_server, &state);
 }
 
 fn cleanup(
