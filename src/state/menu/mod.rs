@@ -10,6 +10,7 @@ impl Plugin for Menu {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(title))
+            .add_system_set(SystemSet::on_update(AppState::Menu).with_system(title_animation))
         //    .add_system_set(SystemSet::on_update(AppState::Menu).with_system(options_button))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(show_play_button))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(play_button))
@@ -23,6 +24,9 @@ impl Plugin for Menu {
         ;
     }
 }
+
+#[derive(Component)]
+struct Title;
 
 fn title(
     mut commands: Commands,
@@ -44,7 +48,40 @@ fn title(
         transform: Transform::from_translation(Vec3::new(camera_position.x, camera_position.y + 150.0, 10.0)),
         ..Default::default()
     })
+        .insert(Title)
         .insert(Screen(AppState::Menu));
+}
+
+fn title_animation(
+    time: Res<Time>,
+    mut query: Query<(&Title, &mut Transform)>,
+) {
+    for (_, mut transform) in query.iter_mut() {
+        //that math major finally came in handy
+        const HALF_TURN: f64 = std::f64::consts::PI;
+        const ANIMATION_FIRST_ROTATION_START: f64 = 1.0;
+        const ANIMATION_FIRST_ROTATION_END: f64 = 1.8;
+        const ANIMATION_SECOND_ROTATION_START: f64 = 3.0;
+        const ANIMATION_SECOND_ROTATION_END: f64 = 3.1;
+        const ANIMATION_TOTAL_TIME: f64 = 6.0;
+        let time = time.seconds_since_startup() % ANIMATION_TOTAL_TIME;
+        let angle = if time < ANIMATION_FIRST_ROTATION_START {
+            0.0
+        } else if time < ANIMATION_FIRST_ROTATION_END {
+            let proportion = (time - ANIMATION_FIRST_ROTATION_START) / (ANIMATION_FIRST_ROTATION_END - ANIMATION_FIRST_ROTATION_START);
+            proportion * HALF_TURN
+        } else if time < ANIMATION_SECOND_ROTATION_START {
+            let proportion = (time - ANIMATION_FIRST_ROTATION_END) / (ANIMATION_SECOND_ROTATION_START - ANIMATION_FIRST_ROTATION_END);
+            let wobble = 0.1 * f64::sin(4.0 * HALF_TURN * proportion);
+            HALF_TURN + wobble
+        } else if time < ANIMATION_SECOND_ROTATION_END {
+            let proportion = (time - ANIMATION_SECOND_ROTATION_START) / (ANIMATION_SECOND_ROTATION_END - ANIMATION_SECOND_ROTATION_START);
+            (1.0 - proportion) * HALF_TURN
+        } else {
+            0.0
+        };
+        transform.rotation = Quat::from_rotation_z(angle as f32);
+    }
 }
 
 fn show_play_button(
