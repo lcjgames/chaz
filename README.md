@@ -1,6 +1,6 @@
-# Bevy Starter Project
+# Chaz
 
-A basic bevy project with common libs and code snippets, that builds to webassembly.
+A webassembly game made with Bevy for the first Bevy game jam.
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ Does not work for me on Firefox for some reason, but works on Chrome.
 ### Build
 ```bash
 cargo build --release
-wasm-bindgen --out-dir out/pkg --target web target/wasm32-unknown-unknown/release/bevy_starter_project.wasm
+wasm-bindgen --out-dir out/pkg --target web target/wasm32-unknown-unknown/release/chaz.wasm
 rsync -a assets/ out/assets/
 ```
 
@@ -39,8 +39,8 @@ python3 -m http.server <port>
 Build, then run this:
 ```bash
 butler login # follow the instructions
-zip -r bevy-starter-project.zip out
-butler push bevy-starter-project.zip <user>/bevy-starter-project:html
+zip -r chaz.zip out
+butler push chaz.zip luizchagasjardim/chaz:html
 ```
 If this is the first time uploading to the html channel,
 you need to go to the game page on itch.io and click on _Edit game_,
