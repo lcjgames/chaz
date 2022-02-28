@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+
+use crate::button::Action;
 use crate::camera::MainCamera;
 use crate::GameOverEvent;
 
@@ -10,7 +12,8 @@ impl Plugin for GameOver {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(show_text))
-            .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(show_button))
+            .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(show_retry_button))
+            .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(show_back_button))
             .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(button))
             .add_system_set(SystemSet::on_exit(AppState::GameOver).with_system(cleanup));
     }
@@ -57,7 +60,7 @@ fn show_text(
     }
 }
 
-fn show_button(
+fn show_retry_button(
     mut commands: Commands,
     asset_server: Res<AssetServer>
 ) {
@@ -73,6 +76,7 @@ fn show_button(
             },
             ..Default::default()
         })
+        .insert(Action::ChangeState(AppState::Game))
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
                 text: Text::with_section(
@@ -89,17 +93,51 @@ fn show_button(
         });
 }
 
+fn show_back_button(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>
+) {
+    commands.spawn_bundle(UiCameraBundle::default()); //TODO: spawn this during pre-load
+    commands
+        .spawn_bundle(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                margin: Rect::all(Val::Auto),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Action::ChangeState(AppState::Menu))
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text::with_section(
+                    "Back",
+                    TextStyle {
+                        font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
+                        font_size: 40.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                    },
+                    Default::default(),
+                ),
+                ..Default::default()
+            });
+        });
+}
 
 fn button(
     mut state: ResMut<State<AppState>>,
-    mut query: Query<(&Interaction, &mut UiColor), (Changed<Interaction>, With<Button>)>,
+    mut query: Query<(&Interaction, &mut UiColor, &Action), (Changed<Interaction>, With<Button>)>,
 ) {
-    for (interaction, mut color) in query.iter_mut() {
+    for (interaction, mut color, action) in query.iter_mut() {
         *color = match *interaction {
             Interaction::Hovered => Color::DARK_GRAY.into(),
             Interaction::None => Color::rgb(0.15, 0.15, 0.15).into(),
             Interaction::Clicked => {
-                state.set(AppState::Game).unwrap();
+                match action {
+                    Action::ChangeState(screen) => { state.set(*screen).unwrap(); },
+                }
                 Color::DARK_GRAY.into()
             },
         }

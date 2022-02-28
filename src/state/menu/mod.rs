@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 
 use crate::camera::MainCamera;
+use crate::screen::Screen;
 use crate::state::AppState;
-
-mod screen;
-use screen::Screen;
 
 pub struct Menu;
 
@@ -79,7 +77,8 @@ fn show_play_button(
                     Default::default(),
                 ),
                 ..Default::default()
-            });
+            })
+                .insert(Screen(AppState::Menu));
         });
 }
 
