@@ -10,16 +10,19 @@ pub struct Menu;
 impl Plugin for Menu {
     fn build(&self, app: &mut App) {
         app
+            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(title))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(title_animation))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(play_button))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(options_button))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(buttons))
             .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(cleanup))
+            .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(back_button))
             .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(level_0_button))
             .add_system_set(SystemSet::on_update(AppState::LevelSelect).with_system(buttons))
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(cleanup))
+            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::Options).with_system(back_button))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(buttons))
             .add_system_set(SystemSet::on_exit(AppState::Options).with_system(cleanup));
@@ -28,6 +31,14 @@ impl Plugin for Menu {
 
 #[derive(Component)]
 struct Title;
+
+fn ui_camera(
+    mut commands: Commands,
+    state: Res<State<AppState>>,
+) {
+    commands.spawn_bundle(UiCameraBundle::default())
+        .insert(Screen(*state.current()));
+}
 
 fn title(
     mut commands: Commands,
@@ -89,8 +100,6 @@ fn play_button(
     mut commands: Commands,
     asset_server: Res<AssetServer>
 ) {
-    commands.spawn_bundle(UiCameraBundle::default())
-        .insert(Screen(AppState::Menu));
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
@@ -125,8 +134,6 @@ fn level_0_button(
     mut commands: Commands,
     asset_server: Res<AssetServer>
 ) {
-    commands.spawn_bundle(UiCameraBundle::default())
-        .insert(Screen(AppState::LevelSelect));
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
@@ -161,8 +168,6 @@ fn options_button(
     mut commands: Commands,
     asset_server: Res<AssetServer>
 ) {
-    commands.spawn_bundle(UiCameraBundle::default())
-        .insert(Screen(AppState::Menu));
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
