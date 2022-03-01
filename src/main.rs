@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 
+mod background;
 mod button;
 mod camera;
 mod controls;
