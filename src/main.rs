@@ -2,21 +2,20 @@
 
 use bevy::prelude::*;
 
+mod button;
 mod camera;
-
 mod controls;
-
+mod log;
+use log::*;
+mod screen;
 mod sprite;
 use sprite::SpriteHandles;
-
 mod state;
+
 use state::*;
 
 #[macro_use]
 extern crate lazy_static;
-
-mod log;
-use log::*;
 
 fn main() {
     // When building for WASM, print panics to the browser console
@@ -29,6 +28,7 @@ fn main() {
         .add_event::<GameOverEvent>()
         .add_plugins(DefaultPlugins)
         .add_plugin(Loading)
+        .add_plugin(Menu)
         .add_plugin(Game)
         .add_plugin(GameOver)
         .add_plugin(Pause)

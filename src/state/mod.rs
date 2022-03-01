@@ -1,7 +1,10 @@
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AppState {
     PreLoad,
     Loading,
+    Menu,
+    Options,
+    LevelSelect,
     Game,
     GameOver,
     Pause,
@@ -26,6 +29,8 @@ mod game;
 pub use game::Game;
 mod loading;
 pub use loading::Loading;
+mod menu;
+pub use menu::Menu;
 mod game_over;
 pub use game_over::GameOver;
 mod pause;

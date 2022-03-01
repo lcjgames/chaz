@@ -102,7 +102,7 @@ fn check_textures(
         }
     }
     if loaded == total {
-        state.set(AppState::Game).unwrap();
+        state.set(AppState::Menu).unwrap();
         return;
     }
     let percent = (100*loaded) as f32 / total as f32;
