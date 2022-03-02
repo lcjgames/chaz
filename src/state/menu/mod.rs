@@ -53,6 +53,7 @@ fn ui_camera(
 fn title(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    camera_query: Query<(Entity, &MainCamera)>,
 ) {
     let text_style = TextStyle {
         font: asset_server.load("kenney-fonts/Fonts/Kenney Blocks.ttf"),
@@ -63,13 +64,16 @@ fn title(
         vertical: VerticalAlign::Center,
         horizontal: HorizontalAlign::Center,
     };
-    commands.spawn_bundle(Text2dBundle { //TODO: use UI to avoid it going away
-        text: Text::with_section("Chaz", text_style, text_alignment),
-        transform: Transform::from_translation(Vec3::new(0.0, 150.0, 10.0)),
-        ..Default::default()
-    })
-        .insert(Title)
-        .insert(Screen(AppState::Menu));
+    let (camera_id, _) = camera_query.single();
+    commands.entity(camera_id).with_children(|camera| {
+       camera.spawn_bundle(Text2dBundle {
+           text: Text::with_section("Chaz", text_style, text_alignment),
+           transform: Transform::from_translation(Vec3::new(0.0, 150.0, -10.0)),
+           ..Default::default()
+       })
+           .insert(Title)
+           .insert(Screen(AppState::Menu));
+    });
 }
 
 fn title_animation(
