@@ -13,7 +13,7 @@ fn log(s: &str) {
 }
 
 macro_rules! console_log {
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+    ($($t:tt)*) => (crate::log::log(&format_args!($($t)*).to_string()))
 }
 
 pub(crate) use console_log;

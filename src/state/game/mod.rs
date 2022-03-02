@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
-use crate::camera::MainCamera;
+use crate::background::*;
+use crate::camera::*;
 use crate::controls::Controls;
 use crate::state::{AppState, GameOverEvent};
 use crate::sprite::*;
@@ -28,6 +29,7 @@ impl Plugin for Game {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<RivalPositions>()
+            .add_system_set(SystemSet::on_enter(AppState::Game).with_system(reset_camera_position))
             .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_background))
             .add_system_set(SystemSet::on_enter(AppState::Game).with_system(load_level))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(animation))
@@ -39,31 +41,10 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(check_win))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_background))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(record_player_position))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_rival_position));
-    }
-}
-
-fn spawn_background(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-    let tile_size = 24.0;
-    let layer = 0.0;
-    for i in -10..11 {
-        for j in -10..11 {
-            //TODO: use one big image looping or just moving with the camera instead of creating a trillion entities
-            let cloud_height = 3;
-            let image = if j < cloud_height { SpriteTypeStates::Full } else if j == cloud_height { SpriteTypeStates::Half } else { SpriteTypeStates::Empty };
-            let image = SPRITES[&SpriteType::BlueBG][&image];
-            commands
-                .spawn_bundle(SpriteBundle {
-                    texture: asset_server.get_handle(image),
-                    transform: Transform::from_translation(Vec3::new(i as f32*tile_size, j as f32*tile_size, layer)),
-                    ..Default::default()
-                });
-        }
     }
 }
 

@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
+use crate::background::*;
 use crate::button::*;
-use crate::camera::MainCamera;
+use crate::camera::*;
 use crate::screen::Screen;
 use crate::state::AppState;
 
@@ -10,19 +11,30 @@ pub struct Menu;
 impl Plugin for Menu {
     fn build(&self, app: &mut App) {
         app
+            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(reset_camera_position))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(title))
+            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(spawn_background))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(title_animation))
+            .add_system_set(SystemSet::on_update(AppState::Menu).with_system(move_camera))
+            .add_system_set(SystemSet::on_update(AppState::Menu).with_system(update_background))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(show_menu_buttons))
             .add_system_set(SystemSet::on_update(AppState::Menu).with_system(buttons))
+            .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(clear_background))
             .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(show_level_select_buttons))
             .add_system_set(SystemSet::on_update(AppState::LevelSelect).with_system(buttons))
+            .add_system_set(SystemSet::on_update(AppState::LevelSelect).with_system(move_camera))
+            .add_system_set(SystemSet::on_update(AppState::LevelSelect).with_system(update_background))
+            .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(clear_background))
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::Options).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::Options).with_system(show_option_buttons))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(buttons))
+            .add_system_set(SystemSet::on_update(AppState::Options).with_system(move_camera))
+            .add_system_set(SystemSet::on_update(AppState::Options).with_system(update_background))
+            .add_system_set(SystemSet::on_exit(AppState::Options).with_system(clear_background))
             .add_system_set(SystemSet::on_exit(AppState::Options).with_system(cleanup));
     }
 }
@@ -41,9 +53,8 @@ fn ui_camera(
 fn title(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    camera_query: Query<(&MainCamera, &Transform)>,
+    camera_query: Query<(Entity, &MainCamera)>,
 ) {
-    let camera_position = camera_query.single().1.translation;
     let text_style = TextStyle {
         font: asset_server.load("kenney-fonts/Fonts/Kenney Blocks.ttf"),
         font_size: 120.0,
@@ -53,13 +64,16 @@ fn title(
         vertical: VerticalAlign::Center,
         horizontal: HorizontalAlign::Center,
     };
-    commands.spawn_bundle(Text2dBundle {
-        text: Text::with_section("Chaz", text_style, text_alignment),
-        transform: Transform::from_translation(Vec3::new(camera_position.x, camera_position.y + 150.0, 10.0)),
-        ..Default::default()
-    })
-        .insert(Title)
-        .insert(Screen(AppState::Menu));
+    let (camera_id, _) = camera_query.single();
+    commands.entity(camera_id).with_children(|camera| {
+       camera.spawn_bundle(Text2dBundle {
+           text: Text::with_section("Chaz", text_style, text_alignment),
+           transform: Transform::from_translation(Vec3::new(0.0, 150.0, -10.0)),
+           ..Default::default()
+       })
+           .insert(Title)
+           .insert(Screen(AppState::Menu));
+    });
 }
 
 fn title_animation(
@@ -91,6 +105,17 @@ fn title_animation(
             0.0
         };
         transform.rotation = Quat::from_rotation_z(angle as f32);
+    }
+}
+
+fn move_camera(
+    time: Res<Time>,
+    mut query: Query<(&MainCamera, &mut Transform)>,
+) {
+    for (_, mut transform) in query.iter_mut() {
+        let time = time.seconds_since_startup() as f32;
+        transform.translation.x = time * 30.0;
+        transform.translation.y = 30.0 * f32::sin(0.5 * time);
     }
 }
 
