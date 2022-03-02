@@ -123,7 +123,7 @@ fn load_level(
                             },
                         };
                     },
-                    Tile::Blue => {
+                    Tile::Blue | Tile::Jeremy => {
                         entity.insert(EnemyHitbox(hitbox));
                     },
                     Tile::Npc(_) => {
