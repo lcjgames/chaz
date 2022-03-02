@@ -111,8 +111,8 @@ fn load_level(
                         };
                         match options.difficulty {
                             Difficulty::Training => {},
-                            Difficulty::Easy => spawn_torch(10.0),
-                            Difficulty::Medium => spawn_torch(3.16),
+                            Difficulty::Easy => spawn_torch(3.0),
+                            Difficulty::Medium => spawn_torch(2.0),
                             Difficulty::Hard => spawn_torch(1.0),
                             Difficulty::Zatoichi => {
                                 commands.spawn_bundle(SpriteBundle {
