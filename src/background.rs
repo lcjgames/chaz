@@ -7,11 +7,11 @@ use crate::sprite::*;
 pub struct Background; //TODO: layers with paralax?
 
 const IMAGE_SIZE: f32 = 24.0;
-const SCALE: f32 = 30.0;
+const SCALE: f32 = 10.0;
 const TILE_SIZE: f32 = IMAGE_SIZE * SCALE;
 const CLOUD_HEIGHT: f32 = 100.0;
 
-fn snap_to_grid(position: Vec3) -> Vec3 {
+fn snap_to_grid(position: &Vec3) -> Vec3 {
     Vec3::new(snap_component(position.x), snap_component(position.y), position.z)
 }
 
@@ -25,12 +25,12 @@ fn in_tile(tile_start: &Vec3, position: &Vec3) -> bool {
 
 fn in_vertical_strip(tile_start: &Vec3, position: &Vec3) -> bool {
     let difference = position.x - tile_start.x;
-    0.0 < difference && difference < TILE_SIZE
+    0.0 <= difference && difference < TILE_SIZE
 }
 
 fn in_horizontal_strip(tile_start: &Vec3, position: &Vec3) -> bool {
     let difference = position.y - tile_start.y;
-    0.0 < difference && difference < TILE_SIZE
+    0.0 <= difference && difference < TILE_SIZE
 }
 
 fn get_image(position: &Vec3) -> &'static str {
@@ -42,14 +42,14 @@ pub fn spawn_background(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     windows: Res<Windows>,
-    query: Query<(&Background, &Transform)>,
+    query: Query<(Entity, &Background, &Transform)>,
 ) {
     let window = windows.get_primary().unwrap();
-    let start_position = Vec3::new(-window.width()/2.0, -window.height()/2.0, 0.0);
+    let window_size = Vec3::new(window.width(), window.height(), 0.0);
+    let start_position = - window_size / 2.0;
     spawn_tiles(
-        start_position,
-        1+(window.width() / TILE_SIZE).ceil() as i32,
-        1+(window.height() / TILE_SIZE).ceil() as i32,
+        &start_position,
+        &window_size,
         &mut commands,
         &asset_server,
         &query
@@ -60,37 +60,45 @@ pub fn update_background(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     windows: Res<Windows>,
-    background_query: Query<(&Background, &Transform)>,
+    background_query: Query<(Entity, &Background, &Transform)>,
     camera_query: Query<(&MainCamera, &Transform)>,
 ) {
     let camera_position = camera_query.single().1.translation;
     let window = windows.get_primary().unwrap();
-    let start_position = Vec3::new(camera_position.x - window.width()/2.0, camera_position.y - window.height()/2.0, 0.0);
+    let window_size = Vec3::new(window.width(), window.height(), 0.0);
+    let start_position = Vec3::new(camera_position.x, camera_position.y, 0.0) - window_size / 2.0;
     spawn_tiles(
-        start_position,
-        (window.width() / TILE_SIZE).ceil() as i32,
-        (window.height() / TILE_SIZE).ceil() as i32,
+        &start_position,
+        &window_size,
         &mut commands,
         &asset_server,
-        &background_query
+        &background_query,
     );
-    //TODO: despawn_tiles
+    despawn_tiles(
+        &start_position,
+        &window_size,
+        &mut commands,
+        &background_query,
+    );
 }
 
 fn spawn_tiles(
-    start_position: Vec3,
-    horizontal_count: i32,
-    vertical_count: i32,
+    start_position: &Vec3,
+    window_size: &Vec3,
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
-    query: &Query<(&Background, &Transform)>,
+    query: &Query<(Entity, &Background, &Transform)>,
 ) {
+    let horizontal_count = (window_size.x / TILE_SIZE).ceil() as i32;
+    let vertical_count = (window_size.y / TILE_SIZE).ceil() as i32;
     let start_position = snap_to_grid(start_position);
     for i in -3..3+horizontal_count {
         for j in -3..3+vertical_count {
             let position = start_position + Vec3::new(i as f32*TILE_SIZE, j as f32*TILE_SIZE, 0.0);
-            if query.iter().any(|(_, tile_transform)| in_tile(&tile_transform.translation, &position)) {
-                break;
+            if query.iter()
+                .map(|(_, _, tile_transform)| tile_transform.translation)
+                .any(|tile_position| in_tile(&tile_position, &position)) {
+                continue;
             }
             let image = get_image(&position);
             commands
@@ -99,6 +107,26 @@ fn spawn_tiles(
                     transform: Transform::from_translation(position).with_scale(Vec3::splat(SCALE)),
                     ..Default::default()
                 }).insert(Background::default());
+        }
+    }
+}
+
+fn despawn_tiles(
+    start_position: &Vec3,
+    window_size: &Vec3,
+    commands: &mut Commands,
+    query: &Query<(Entity, &Background, &Transform)>,
+) {
+    let despawn_margin = 4.5 * TILE_SIZE;
+    let left_margin = start_position.x - despawn_margin;
+    let bottom_margin = start_position.y - despawn_margin;
+    let end_position = *start_position + *window_size;
+    let right_margin = end_position.x + TILE_SIZE + despawn_margin;
+    let upper_margin = end_position.y + TILE_SIZE + despawn_margin;
+    for (id, _, transform) in query.iter() {
+        let position = transform.translation;
+        if position.x < left_margin || position.x > right_margin || position.y < bottom_margin || position.y > upper_margin {
+            commands.entity(id).despawn();
         }
     }
 }
