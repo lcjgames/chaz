@@ -10,7 +10,7 @@ use crate::sprite::*;
 mod direction;
 
 mod enemies;
-use enemies::Jeremy;
+use enemies::*;
 
 mod hitbox;
 use hitbox::*;
@@ -45,6 +45,7 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(check_win))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(jeremy_movement))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(blocky_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_background))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
@@ -136,6 +137,12 @@ fn load_level(
                         entity.insert(direction::Direction::Left);
                         entity.insert(Jeremy);
                     },
+                    Tile::Blocky => {
+                        entity.insert(EnemyHitbox(hitbox));
+                        entity.insert(InitialPosition(tile_info.position));
+                        entity.insert(direction::Direction::Up);
+                        entity.insert(Blocky);
+                    },
                     Tile::Npc(_) => {
                         todo!()
                     },
@@ -224,6 +231,34 @@ fn jeremy_movement(
             } else {
                 direction::Direction::Right
             }
+        }
+    }
+}
+
+fn blocky_movement(
+    time: Res<Time>,
+    mut query: Query<(&InitialPosition, &mut Transform, &mut direction::Direction, &mut Sprite), With<Blocky>>,
+) {
+    let movement_amplitude = 96.0;
+    for (initial_position, mut transform, mut direction, mut sprite) in query.iter_mut() {
+        crate::console_log!("{}", transform.translation);
+        let speed = match *direction {
+            direction::Direction::Up => {
+                //*sprite = Sprite::
+                48.0
+            },
+            direction::Direction::Down => {
+                120.0
+            },
+            _ => panic!("Blocky should only move up and down!"),
+        };
+        transform.translation.y += f32::from(*direction) * speed * time.delta_seconds();
+        let amplitude = transform.translation.y - initial_position.0.y;
+        if amplitude >= movement_amplitude {
+            *direction = direction::Direction::Down
+        }
+        if amplitude <= 0.0 {
+            *direction = direction::Direction::Up
         }
     }
 }
