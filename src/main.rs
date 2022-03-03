@@ -12,6 +12,7 @@ mod screen;
 mod sprite;
 use sprite::SpriteHandles;
 mod state;
+mod options;
 
 use state::*;
 

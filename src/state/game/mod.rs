@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::background::*;
 use crate::camera::*;
 use crate::controls::Controls;
+use crate::options::{Difficulty, Options};
 use crate::state::{AppState, GameOverEvent};
 use crate::sprite::*;
 
@@ -50,12 +51,14 @@ impl Plugin for Game {
 
 fn load_level(
     rival_positions: Res<RivalPositions>,
+    options: Res<Options>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     sprite_handles: Res<SpriteHandles>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
 ) {
+    crate::console_log!("{:?}", options);
     let mut spawn = |name| {
         spawn(
             name,
@@ -96,13 +99,29 @@ fn load_level(
                         entity.insert_bundle(RivalBundle {
                             positions: rival_positions.0.clone(),
                             ..Default::default()
-                        })
-                            .with_children(|parent| {
+                        });
+                        let mut spawn_torch = |scale| {
+                            entity.with_children(|parent| {
                                 parent.spawn_bundle(SpriteBundle {
                                     texture: asset_server.get_handle("torch-light-effect.png"),
+                                    transform: Transform::from_scale(Vec3::splat(scale)),
                                     ..Default::default()
                                 });
                             });
+                        };
+                        match options.difficulty {
+                            Difficulty::Training => {},
+                            Difficulty::Easy => spawn_torch(3.0),
+                            Difficulty::Medium => spawn_torch(2.0),
+                            Difficulty::Hard => spawn_torch(1.0),
+                            Difficulty::Zatoichi => {
+                                commands.spawn_bundle(SpriteBundle {
+                                    texture: asset_server.load("zatoichi-vision.png"),
+                                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)).with_scale(Vec3::splat(100.0)),
+                                    ..Default::default()
+                                });
+                            },
+                        };
                     },
                     Tile::Blue => {
                         entity.insert(EnemyHitbox(hitbox));
