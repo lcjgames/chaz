@@ -33,7 +33,7 @@ impl Plugin for Menu {
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(clear_background))
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::Options).with_system(ui_camera))
-            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(show_options_buttons))
+            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(show_options_menu))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(buttons))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(toggles::<Difficulty>))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(move_camera))
@@ -153,12 +153,44 @@ fn show_level_select_buttons(
     }.build(&mut commands, &asset_server, &state);
 }
 
-fn show_options_buttons(
+#[derive(Component)]
+struct DifficultyText;
+
+fn show_options_menu(
     options: Res<Options>,
     state: Res<State<AppState>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
+    // difficulty placeholder
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(410.0),
+                    right: Val::Px(215.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Difficulty",
+                TextStyle {
+                    font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
+                    font_size: 50.0,
+                    color: Color::BLACK,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+        .insert(DifficultyText)
+        .insert(Screen(*state.current()));
     ButtonBuilder {
         text: "Back",
         action: Action::ChangeState(AppState::Menu),
