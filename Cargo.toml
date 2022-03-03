@@ -5,9 +5,29 @@ edition = "2021"
 authors = ["Luiz Chagas Jardim <luizchagasjardim@gmail.com", "Jorge Pinto Sousa (he/him/his) <jorge.pinto.sousa@protonmail.ch>"]
 
 [dependencies]
-bevy = "0.6"
 lazy_static = "1.4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
+
+[dependencies.bevy]
+version = "0.6"
+default-features = false
+# These are the remaining default features other than `bevy_audio` and `mp3`
+features = [
+    "render",
+    "bevy_winit",
+    "bevy_gilrs",
+    "png",
+    "hdr",
+    "filesystem_watcher",
+    "x11"
+]
+
+[dependencies.bevy_kira_audio]
+version = "0.8.0"
+default-features = false
+features = [
+    "ogg",
+]
