@@ -21,7 +21,8 @@ fn main() {
     // When building for WASM, print panics to the browser console
     #[cfg(target_arch = "wasm32")]
         console_error_panic_hook::set_once();
-
+    let my_str = include_str!("../assets/maps/level_01");
+    console_log!("{}", my_str);
     console_log!("Starting Game!");
     App::new()
         .init_resource::<SpriteHandles>()
