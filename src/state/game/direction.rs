@@ -8,6 +8,12 @@ pub enum Direction {
 }
 
 impl Direction {
+    pub fn invert(&mut self) {
+        *self = match self {
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+        }
+    }
     pub fn from_input(left_pressed: bool, right_pressed: bool) -> Option<Self> {
         let mut direction = 0;
         if left_pressed {
@@ -33,17 +39,6 @@ impl Direction {
         }
     }
 }
-
-/*
-impl Into<f32> for Direction {
-    fn into(self) -> f32 {
-        match self {
-            Direction::Left => -1.0,
-            Direction::Right => 1.0,
-        }
-    }
-}
-*/
 
 impl From<Direction> for f32 {
     fn from(direction: Direction) -> Self {

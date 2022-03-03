@@ -9,6 +9,9 @@ use crate::sprite::*;
 
 mod direction;
 
+mod enemies;
+use enemies::Jeremy;
+
 mod hitbox;
 use hitbox::*;
 
@@ -41,6 +44,7 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(player_enemy_collision))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(check_win))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(jeremy_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_background))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
@@ -110,7 +114,7 @@ fn load_level(
                             });
                         };
                         match options.difficulty {
-                            Difficulty::Training => {},
+                            Difficulty::Training => entity.despawn(),
                             Difficulty::Easy => spawn_torch(3.0),
                             Difficulty::Medium => spawn_torch(2.0),
                             Difficulty::Hard => spawn_torch(1.0),
@@ -123,8 +127,14 @@ fn load_level(
                             },
                         };
                     },
-                    Tile::Blue | Tile::Jeremy => {
+                    Tile::Blue => {
                         entity.insert(EnemyHitbox(hitbox));
+                    },
+                    Tile::Jeremy => {
+                        entity.insert(EnemyHitbox(hitbox));
+                        entity.insert(InitialPosition(tile_info.position));
+                        entity.insert(direction::Direction::Left);
+                        entity.insert(Jeremy);
                     },
                     Tile::Npc(_) => {
                         todo!()
@@ -196,6 +206,21 @@ fn movement(
     for (mut velocity, mut transform) in query.iter_mut() {
         velocity.apply_gravity(time.delta_seconds());
         transform.translation += velocity.0 * time.delta_seconds();
+    }
+}
+
+fn jeremy_movement(
+    time: Res<Time>,
+    mut query: Query<(&InitialPosition, &mut Transform, &mut direction::Direction), With<Jeremy>>,
+) {
+    let speed = 20.0;
+    let movement_amplitude = 20.0;
+    for (initial_position, mut transform, mut direction) in query.iter_mut() {
+        transform.translation.x += f32::from(*direction) * speed * time.delta_seconds();
+        crate::console_log!("{} - {} = {}", transform.translation.x, initial_position.0.x, transform.translation.x - initial_position.0.x);
+        if (transform.translation.x - initial_position.0.x).abs() >= movement_amplitude {
+            direction.invert();
+        }
     }
 }
 
