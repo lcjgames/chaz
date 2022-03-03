@@ -9,6 +9,9 @@ use crate::sprite::*;
 
 mod direction;
 
+mod enemies;
+use enemies::*;
+
 mod hitbox;
 use hitbox::*;
 
@@ -41,6 +44,8 @@ impl Plugin for Game {
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(player_enemy_collision))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(check_win))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(jeremy_movement))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(blocky_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(camera_movement))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(update_background))
             .add_system_set(SystemSet::on_update(AppState::Game).with_system(out_of_bounds))
@@ -110,7 +115,7 @@ fn load_level(
                             });
                         };
                         match options.difficulty {
-                            Difficulty::Training => {},
+                            Difficulty::Training => entity.despawn(),
                             Difficulty::Easy => spawn_torch(3.0),
                             Difficulty::Medium => spawn_torch(2.0),
                             Difficulty::Hard => spawn_torch(1.0),
@@ -125,6 +130,18 @@ fn load_level(
                     },
                     Tile::Blue => {
                         entity.insert(EnemyHitbox(hitbox));
+                    },
+                    Tile::Jeremy => {
+                        entity.insert(EnemyHitbox(hitbox));
+                        entity.insert(InitialPosition(tile_info.position));
+                        entity.insert(direction::Direction::Left);
+                        entity.insert(Jeremy);
+                    },
+                    Tile::Blocky => {
+                        entity.insert(EnemyHitbox(hitbox));
+                        entity.insert(InitialPosition(tile_info.position));
+                        entity.insert(direction::Direction::Up);
+                        entity.insert(Blocky);
                     },
                     Tile::Npc(_) => {
                         todo!()
@@ -196,6 +213,56 @@ fn movement(
     for (mut velocity, mut transform) in query.iter_mut() {
         velocity.apply_gravity(time.delta_seconds());
         transform.translation += velocity.0 * time.delta_seconds();
+    }
+}
+
+fn jeremy_movement(
+    time: Res<Time>,
+    mut query: Query<(&InitialPosition, &mut Transform, &mut direction::Direction), With<Jeremy>>,
+) {
+    let speed = 20.0;
+    let movement_amplitude = 20.0;
+    for (initial_position, mut transform, mut direction) in query.iter_mut() {
+        transform.translation.x += f32::from(*direction) * speed * time.delta_seconds();
+        let amplitude = transform.translation.x - initial_position.0.x;
+        if amplitude.abs() >= movement_amplitude {
+            *direction = if amplitude > 0.0 {
+                direction::Direction::Left
+            } else {
+                direction::Direction::Right
+            }
+        }
+    }
+}
+
+fn blocky_movement(
+    time: Res<Time>,
+    asset_server: Res<AssetServer>,
+    mut query: Query<(&InitialPosition, &mut Transform, &mut direction::Direction, &mut Handle<Image>), With<Blocky>>,
+) {
+    let movement_amplitude = 96.0;
+    for (initial_position, mut transform, mut direction, mut image) in query.iter_mut() {
+        crate::console_log!("{}", transform.translation);
+        let (image_path, speed) = match *direction {
+            direction::Direction::Up => (
+                SPRITES[&SpriteType::Blocky][&SpriteTypeStates::Surprised],
+                48.0
+            ),
+            direction::Direction::Down => (
+                SPRITES[&SpriteType::Blocky][&SpriteTypeStates::Pissed],
+                120.0
+            ),
+            _ => panic!("Blocky should only move up and down!"),
+        };
+        *image = asset_server.get_handle(image_path);
+        transform.translation.y += f32::from(*direction) * speed * time.delta_seconds();
+        let amplitude = transform.translation.y - initial_position.0.y;
+        if amplitude >= movement_amplitude {
+            *direction = direction::Direction::Down
+        }
+        if amplitude <= 0.0 {
+            *direction = direction::Direction::Up
+        }
     }
 }
 
@@ -305,13 +372,13 @@ fn check_win(
                 use crate::log::*;
                 console_log!("rival_positions: Positions {{");
                 console_log!("values: vec![");
-                for position in positions.values.iter() {
+                for position in player_positions.values.iter() {
                     console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
                 }
                 console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
-                console_log!("timer: Timer::from_seconds({}, true),", positions.timer.duration().as_secs_f32());
+                console_log!("timer: Timer::from_seconds({}, true),", player_positions.timer.duration().as_secs_f32());
                 console_log!("}}");
-                */
+                // */
                 game_over.send(GameOverEvent {
                     main_message: "You\nwin".to_string(),
                     ..Default::default()

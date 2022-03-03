@@ -52,7 +52,7 @@ pub enum SpriteType {
     Beige,
     SpikeBall,
     Fish,
-    Block,
+    Blocky,
     Hedgehog,
     BabyJeremy,
     Jeremy,
@@ -164,7 +164,7 @@ pub static ref SPRITES: HashMap<SpriteType, HashMap<SpriteTypeStates, &'static s
         (SpriteTypeStates::Closed, "pixel-platformer/Characters/character_0011.png"),
         (SpriteTypeStates::Open, "pixel-platformer/Characters/character_0012.png"),
     ])),
-    (SpriteType::Block, HashMap::from([
+    (SpriteType::Blocky, HashMap::from([
         (SpriteTypeStates::Surprised, "pixel-platformer/Characters/character_0013.png"),
         (SpriteTypeStates::Pissed, "pixel-platformer/Characters/character_0014.png"),
     ])),
