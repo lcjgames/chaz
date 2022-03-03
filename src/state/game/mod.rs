@@ -217,9 +217,13 @@ fn jeremy_movement(
     let movement_amplitude = 20.0;
     for (initial_position, mut transform, mut direction) in query.iter_mut() {
         transform.translation.x += f32::from(*direction) * speed * time.delta_seconds();
-        crate::console_log!("{} - {} = {}", transform.translation.x, initial_position.0.x, transform.translation.x - initial_position.0.x);
-        if (transform.translation.x - initial_position.0.x).abs() >= movement_amplitude {
-            direction.invert();
+        let amplitude = transform.translation.x - initial_position.0.x;
+        if amplitude.abs() >= movement_amplitude {
+            *direction = if amplitude > 0.0 {
+                direction::Direction::Left
+            } else {
+                direction::Direction::Right
+            }
         }
     }
 }
@@ -330,13 +334,13 @@ fn check_win(
                 use crate::log::*;
                 console_log!("rival_positions: Positions {{");
                 console_log!("values: vec![");
-                for position in positions.values.iter() {
+                for position in player_positions.values.iter() {
                     console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
                 }
                 console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
-                console_log!("timer: Timer::from_seconds({}, true),", positions.timer.duration().as_secs_f32());
+                console_log!("timer: Timer::from_seconds({}, true),", player_positions.timer.duration().as_secs_f32());
                 console_log!("}}");
-                */
+                // */
                 game_over.send(GameOverEvent {
                     main_message: "You\nwin".to_string(),
                     ..Default::default()
