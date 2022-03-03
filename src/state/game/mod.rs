@@ -237,21 +237,24 @@ fn jeremy_movement(
 
 fn blocky_movement(
     time: Res<Time>,
-    mut query: Query<(&InitialPosition, &mut Transform, &mut direction::Direction, &mut Sprite), With<Blocky>>,
+    asset_server: Res<AssetServer>,
+    mut query: Query<(&InitialPosition, &mut Transform, &mut direction::Direction, &mut Handle<Image>), With<Blocky>>,
 ) {
     let movement_amplitude = 96.0;
-    for (initial_position, mut transform, mut direction, mut sprite) in query.iter_mut() {
+    for (initial_position, mut transform, mut direction, mut image) in query.iter_mut() {
         crate::console_log!("{}", transform.translation);
-        let speed = match *direction {
-            direction::Direction::Up => {
-                //*sprite = Sprite::
+        let (image_path, speed) = match *direction {
+            direction::Direction::Up => (
+                SPRITES[&SpriteType::Blocky][&SpriteTypeStates::Surprised],
                 48.0
-            },
-            direction::Direction::Down => {
+            ),
+            direction::Direction::Down => (
+                SPRITES[&SpriteType::Blocky][&SpriteTypeStates::Pissed],
                 120.0
-            },
+            ),
             _ => panic!("Blocky should only move up and down!"),
         };
+        *image = asset_server.get_handle(image_path);
         transform.translation.y += f32::from(*direction) * speed * time.delta_seconds();
         let amplitude = transform.translation.y - initial_position.0.y;
         if amplitude >= movement_amplitude {
