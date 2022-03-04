@@ -6,6 +6,7 @@ use crate::options::*;
 #[derive(Component)]
 pub enum Action {
     ChangeState(AppState),
+    Play { level: usize },
 }
 
 pub struct ButtonBuilder<S: Into<String>> {
@@ -48,6 +49,7 @@ impl<S: Into<String>> ButtonBuilder<S> {
 }
 
 pub fn buttons(
+    mut options: ResMut<Options>,
     mut state: ResMut<State<AppState>>,
     mut query: Query<(&Interaction, &mut UiColor, &Action), (Changed<Interaction>, With<Button>)>,
 ) {
@@ -56,9 +58,14 @@ pub fn buttons(
             Interaction::Hovered => Color::DARK_GRAY.into(),
             Interaction::None => Color::rgb(0.15, 0.15, 0.15).into(),
             Interaction::Clicked => {
-                match action {
-                    Action::ChangeState(screen) => { state.set(*screen).unwrap(); },
-                }
+                let screen = match action {
+                    Action::ChangeState(screen) => *screen,
+                    Action::Play { level } => {
+                        options.level = *level;
+                        AppState::Game
+                    }
+                };
+                state.set(screen).unwrap();
                 Color::DARK_GRAY.into()
             },
         }
