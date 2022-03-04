@@ -55,7 +55,7 @@ impl Plugin for Game {
 }
 
 fn load_level(
-    rival_positions: Res<RivalPositions>,
+    mut rival_positions: ResMut<RivalPositions>,
     options: Res<Options>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -72,7 +72,9 @@ fn load_level(
             &mut textures,
         )
     };
-    for tile_info in read_map(options.level).tile_info_iter() {
+    let map = read_map(options.level);
+    rival_positions.0 = map.rival_positions.clone(); //TODO: get rid of the unnecessary clone
+    for tile_info in map.tile_info_iter() {
         if let Some(tile_info) = tile_info {
             let mut entity = commands.spawn();
             match tile_info.image {

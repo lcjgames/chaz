@@ -149,7 +149,11 @@ fn show_level_select_buttons(
     }.build(&mut commands, &asset_server, &state);
     ButtonBuilder {
         text: "Level 0",
-        action: Action::ChangeState(AppState::Game),
+        action: Action::Play{ level: 0},
+    }.build(&mut commands, &asset_server, &state);
+    ButtonBuilder {
+        text: "Level 1",
+        action: Action::Play{ level: 1},
     }.build(&mut commands, &asset_server, &state);
 }
 
