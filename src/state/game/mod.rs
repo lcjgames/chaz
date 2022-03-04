@@ -15,7 +15,7 @@ use enemies::*;
 mod hitbox;
 use hitbox::*;
 
-mod map;
+pub mod map;
 use map::*;
 
 mod player;
@@ -55,7 +55,7 @@ impl Plugin for Game {
 }
 
 fn load_level(
-    mut rival_positions: ResMut<RivalPositions>,
+    rival_positions: Res<RivalPositions>,
     options: Res<Options>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -73,7 +73,10 @@ fn load_level(
         )
     };
     let map = read_map(options.level);
-    rival_positions.0 = map.rival_positions.clone(); //TODO: get rid of the unnecessary clone
+    let rival_positions = match &rival_positions.0[options.level] {
+        RivalLevelPositions::HardCoded => map.rival_positions.clone(), //TODO: unnecessary clone?
+        RivalLevelPositions::Stolen(positions) => positions.clone(),
+    };
     for tile_info in map.tile_info_iter() {
         if let Some(tile_info) = tile_info {
             let mut entity = commands.spawn();
@@ -104,7 +107,7 @@ fn load_level(
                     },
                     Tile::Rival => {
                         entity.insert_bundle(RivalBundle {
-                            positions: rival_positions.0.clone(),
+                            positions: rival_positions.clone(),
                             ..Default::default()
                         });
                         let mut spawn_torch = |scale| {
@@ -344,7 +347,7 @@ fn player_enemy_collision(
                             secondary_message: Some("Killed by an enemy".to_string()),
                             ..Default::default()
                         });
-                        state.set(AppState::GameOver).unwrap();
+                        state.set(AppState::GameOver).unwrap_or(());
                     },
                 };
             }
@@ -363,10 +366,10 @@ fn check_win(
     for (_, player_hitbox, player_transform, player_positions) in player_query.iter() {
         for (win_hitbox, win_transform) in win_tile_query.iter() {
             if let Some(_) = player_hitbox.0.collide(&player_transform.translation, &win_hitbox.0, &win_transform.translation) {
-                rival_positions.0 = Positions {
+                rival_positions.0[options.level] = RivalLevelPositions::Stolen(Positions {
                     values: player_positions.values.iter().map(|p| *p - Vec3::new(0.0, 0.0, 1.0)).collect(),
                     ..Default::default()
-                };
+                });
                 if options.difficulty == Difficulty::Training {
                     //TODO: a more sophisticated way to do this
                     use crate::log::*;

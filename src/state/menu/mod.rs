@@ -3,10 +3,11 @@ use bevy::prelude::*;
 use crate::background::*;
 use crate::button::*;
 use crate::camera::*;
+use crate::options::*;
 use crate::screen::Screen;
 use crate::state::AppState;
 
-use crate::options::*;
+use crate::state::game::map::LEVEL_COUNT; //TODO: map should be moved to top level
 
 pub struct Menu;
 
@@ -147,14 +148,12 @@ fn show_level_select_buttons(
         text: "Back",
         action: Action::ChangeState(AppState::Menu),
     }.build(&mut commands, &asset_server, &state);
-    ButtonBuilder {
-        text: "Level 0",
-        action: Action::Play{ level: 0},
-    }.build(&mut commands, &asset_server, &state);
-    ButtonBuilder {
-        text: "Level 1",
-        action: Action::Play{ level: 1},
-    }.build(&mut commands, &asset_server, &state);
+    for i in 1..LEVEL_COUNT { //it looks like level 0 is a secret level lol
+        ButtonBuilder {
+            text: format!("Level {}", i),
+            action: Action::Play{ level: i},
+        }.build(&mut commands, &asset_server, &state);
+    }
 }
 
 #[derive(Component)]
