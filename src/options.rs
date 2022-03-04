@@ -5,6 +5,7 @@ use std::fmt::*;
 #[derive(Clone, Debug, Default)]
 pub struct Options {
     pub difficulty: Difficulty,
+    pub level: usize,
 }
 
 impl Options {

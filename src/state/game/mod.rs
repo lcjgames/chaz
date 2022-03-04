@@ -72,7 +72,7 @@ fn load_level(
             &mut textures,
         )
     };
-    for tile_info in read_map().tile_info_iter() {
+    for tile_info in read_map(options.level).tile_info_iter() {
         if let Some(tile_info) = tile_info {
             let mut entity = commands.spawn();
             match tile_info.image {
@@ -352,6 +352,7 @@ fn player_enemy_collision(
 
 fn check_win(
     mut rival_positions: ResMut<RivalPositions>,
+    options: Res<Options>,
     mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     player_query: Query<(&Player, &PlayerGroundHitbox, &Transform, &Positions)>,
@@ -364,20 +365,19 @@ fn check_win(
                     values: player_positions.values.iter().map(|p| *p - Vec3::new(0.0, 0.0, 1.0)).collect(),
                     ..Default::default()
                 };
-                //To change the hardcoded path, uncomment the code below,
-                //then copy and paste this output into the map
-                //TODO: a more sophisticated way to do this
-                /*
-                use crate::log::*;
-                console_log!("rival_positions: Positions {{");
-                console_log!("values: vec![");
-                for position in player_positions.values.iter() {
-                    console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
+                if options.difficulty == Difficulty::Training {
+                    //TODO: a more sophisticated way to do this
+                    use crate::log::*;
+                    console_log!("// To get rival_positions, play in training mode, then copy the output into the source code");
+                    console_log!("rival_positions: Positions {{");
+                    console_log!("values: vec![");
+                    for position in player_positions.values.iter() {
+                        console_log!("Vec3::new({}, {}, 1.5),", position.x, position.y)
+                    }
+                    console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
+                    console_log!("timer: Timer::from_seconds({}, true),", player_positions.timer.duration().as_secs_f32());
+                    console_log!("}}");
                 }
-                console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
-                console_log!("timer: Timer::from_seconds({}, true),", player_positions.timer.duration().as_secs_f32());
-                console_log!("}}");
-                // */
                 game_over.send(GameOverEvent {
                     main_message: "You\nwin".to_string(),
                     ..Default::default()
