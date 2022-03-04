@@ -1,8 +1,9 @@
 #![feature(derive_default_enum)]
 
 use bevy::prelude::*;
-use bevy_kira_audio::{Audio, AudioPlugin};
 
+mod sound;
+use sound::Sound;
 mod background;
 mod button;
 mod camera;
@@ -20,10 +21,6 @@ use state::*;
 #[macro_use]
 extern crate lazy_static;
 
-fn start_background_audio(asset_server: Res<AssetServer>, audio: Res<Audio>) {
-    audio.play_looped(asset_server.load("papaparararan.ogg"));
-}
-
 fn main() {
     // When building for WASM, print panics to the browser console
     #[cfg(target_arch = "wasm32")]
@@ -34,8 +31,7 @@ fn main() {
         .init_resource::<SpriteHandles>()
         .add_event::<GameOverEvent>()
         .add_plugins(DefaultPlugins)
-        .add_plugin(AudioPlugin)
-        .add_startup_system(start_background_audio.system())
+        .add_plugin(Sound)
         .add_plugin(Loading)
         .add_plugin(Menu)
         .add_plugin(Game)
