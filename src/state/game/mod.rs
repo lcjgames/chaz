@@ -242,7 +242,6 @@ fn blocky_movement(
 ) {
     let movement_amplitude = 96.0;
     for (initial_position, mut transform, mut direction, mut image) in query.iter_mut() {
-        crate::console_log!("{}", transform.translation);
         let (image_path, speed) = match *direction {
             direction::Direction::Up => (
                 SPRITES[&SpriteType::Blocky][&SpriteTypeStates::Surprised],

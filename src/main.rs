@@ -2,6 +2,8 @@
 
 use bevy::prelude::*;
 
+mod sound;
+use sound::Sound;
 mod background;
 mod button;
 mod camera;
@@ -29,6 +31,7 @@ fn main() {
         .init_resource::<SpriteHandles>()
         .add_event::<GameOverEvent>()
         .add_plugins(DefaultPlugins)
+        .add_plugin(Sound)
         .add_plugin(Loading)
         .add_plugin(Menu)
         .add_plugin(Game)
