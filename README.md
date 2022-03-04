@@ -50,5 +50,5 @@ then set it to playable in the browser.
 
 * Go through the code and fix everything marked with a TODO
 * Fix compilation targeting desktop
-* Fix bug where character can keep in the air if you jump into a corner and hold into a wall
 * Add scripts or cargo make commands to do stuff
+* Add sound effects
