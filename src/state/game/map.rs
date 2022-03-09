@@ -32,14 +32,14 @@ impl FromStr for Tile {
 
     fn from_str(input: &str) -> Result<Tile, Self::Err> {
         match input {
-            "Tile::Empty" => Ok(Tile::Empty),
-            "Tile::Ground" => Ok(Tile::Ground),
-            "Tile::Win" => Ok(Tile::Win),
-            "Tile::Player" => Ok(Tile::Player),
-            "Tile::Rival" => Ok(Tile::Rival),
-            "Tile::Blue" => Ok(Tile::Blue),
-            "Tile::Jeremy" => Ok(Tile::Jeremy),
-            "Tile::Blocky" => Ok(Tile::Blocky),
+            "Empty" => Ok(Tile::Empty),
+            "Ground" => Ok(Tile::Ground),
+            "Win" => Ok(Tile::Win),
+            "Player" => Ok(Tile::Player),
+            "Rival" => Ok(Tile::Rival),
+            "Blue" => Ok(Tile::Blue),
+            "Jeremy" => Ok(Tile::Jeremy),
+            "Blocky" => Ok(Tile::Blocky),
             _ => Err(()),
         }
     }
