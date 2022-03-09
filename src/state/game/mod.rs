@@ -15,7 +15,7 @@ use enemies::*;
 mod hitbox;
 use hitbox::*;
 
-mod map;
+pub mod map;
 use map::*;
 
 mod player;
@@ -72,7 +72,12 @@ fn load_level(
             &mut textures,
         )
     };
-    for tile_info in read_map().tile_info_iter() {
+    let map = read_map(options.level);
+    let rival_positions = match &rival_positions.0[options.level] {
+        RivalLevelPositions::HardCoded => map.rival_positions.clone(), //TODO: unnecessary clone?
+        RivalLevelPositions::Stolen(positions) => positions.clone(),
+    };
+    for tile_info in map.tile_info_iter() {
         if let Some(tile_info) = tile_info {
             let mut entity = commands.spawn();
             match tile_info.image {
@@ -102,7 +107,7 @@ fn load_level(
                     },
                     Tile::Rival => {
                         entity.insert_bundle(RivalBundle {
-                            positions: rival_positions.0.clone(),
+                            positions: rival_positions.clone(),
                             ..Default::default()
                         });
                         let mut spawn_torch = |scale| {
@@ -342,7 +347,7 @@ fn player_enemy_collision(
                             secondary_message: Some("Killed by an enemy".to_string()),
                             ..Default::default()
                         });
-                        state.set(AppState::GameOver).unwrap();
+                        state.set(AppState::GameOver).unwrap_or(());
                     },
                 };
             }
@@ -352,6 +357,7 @@ fn player_enemy_collision(
 
 fn check_win(
     mut rival_positions: ResMut<RivalPositions>,
+    options: Res<Options>,
     mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     player_query: Query<(&Player, &PlayerGroundHitbox, &Transform, &Positions)>,
@@ -360,24 +366,23 @@ fn check_win(
     for (_, player_hitbox, player_transform, player_positions) in player_query.iter() {
         for (win_hitbox, win_transform) in win_tile_query.iter() {
             if let Some(_) = player_hitbox.0.collide(&player_transform.translation, &win_hitbox.0, &win_transform.translation) {
-                rival_positions.0 = Positions {
+                rival_positions.0[options.level] = RivalLevelPositions::Stolen(Positions {
                     values: player_positions.values.iter().map(|p| *p - Vec3::new(0.0, 0.0, 1.0)).collect(),
                     ..Default::default()
-                };
-                //To change the hardcoded path, uncomment the code below,
-                //then copy and paste this output into the map
-                //TODO: a more sophisticated way to do this
-                /*
-                use crate::log::*;
-                console_log!("rival_positions: Positions {{");
-                console_log!("values: vec![");
-                for position in player_positions.values.iter() {
-                    console_log!("Vec3::new({}, {}, 1.0),", position.x, position.y)
+                });
+                if options.difficulty == Difficulty::Training {
+                    //TODO: a more sophisticated way to do this
+                    use crate::log::*;
+                    console_log!("// To get rival_positions, play in training mode, then copy the output into the source code");
+                    console_log!("rival_positions: Positions {{");
+                    console_log!("values: vec![");
+                    for position in player_positions.values.iter() {
+                        console_log!("Vec3::new({}, {}, 1.5),", position.x, position.y)
+                    }
+                    console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
+                    console_log!("timer: Timer::from_seconds({}, true),", player_positions.timer.duration().as_secs_f32());
+                    console_log!("}}");
                 }
-                console_log!("].iter().copied().collect(), //TODO: is there a better way to do this?");
-                console_log!("timer: Timer::from_seconds({}, true),", player_positions.timer.duration().as_secs_f32());
-                console_log!("}}");
-                // */
                 game_over.send(GameOverEvent {
                     main_message: "You\nwin".to_string(),
                     ..Default::default()
