@@ -6,7 +6,6 @@ use super::positions::Positions;
 
 use crate::sprite::{SpriteType, SpriteTypeStates, SpriteVariant};
 use crate::Timer;
-use crate::log::console_log;
 
 const LEVEL_00: &str = include_str!("../../../assets/maps/00_map.txt");
 const LEVEL_01: &str = include_str!("../../../assets/maps/01_map.txt");
