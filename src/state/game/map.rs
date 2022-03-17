@@ -28,7 +28,6 @@ pub enum Tile {
     Blue,
     Jeremy,
     Blocky,
-    Npc(SpriteType), //TODO: remove
 }
 
 impl FromStr for Tile {
@@ -223,14 +222,6 @@ impl Map {
                         relative_position: Vec3::default(), //TODO: better values
                         size: Vec2::new(Tile::SIZE, Tile::SIZE), //TODO: better values
                     }),
-                })
-            },
-            Tile::Npc(name) => {
-                Some(TileInfo {
-                    tile_type: tile,
-                    position: position(1.0),
-                    image: SpriteVariant::SpriteSheet(name),
-                    hitbox: None,
                 })
             },
         }

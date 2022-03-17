@@ -148,9 +148,6 @@ fn load_level(
                         entity.insert(direction::Direction::Up);
                         entity.insert(Blocky);
                     },
-                    Tile::Npc(_) => {
-                        todo!()
-                    },
                 }
             }
         }
