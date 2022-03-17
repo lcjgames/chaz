@@ -22,10 +22,10 @@ fn show_text(
     mut commands: Commands,
     mut game_over: EventReader<GameOverEvent>,
     asset_server: Res<AssetServer>,
-    camera_query: Query<(&MainCamera, &Transform)>,
+    camera_query: Query<&Transform, With<MainCamera>>,
 ) {
     let game_over: GameOverEvent = game_over.iter().next().cloned().unwrap_or_default(); //if there's more than one game over in the same frame, the other ones are discarded
-    let camera_position = camera_query.single().1.translation;
+    let camera_position = camera_query.single().translation;
     let text_style = TextStyle {
         font: asset_server.load("kenney-fonts/Fonts/Kenney Blocks.ttf"),
         font_size: 96.0,

@@ -272,16 +272,16 @@ fn blocky_movement(
 
 fn camera_movement(
     windows: Res<Windows>,
-    player_query: Query<(&Player, &Transform)>,
-    mut camera_query: Query<(&MainCamera, &mut Transform), Without<Player>>,
+    player_query: Query<&Transform, With<Player>>,
+    mut camera_query: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
 ) {
     let window = windows.get_primary().unwrap();
     let horizontal_limit = window.width() * 0.3;
 
-    let (_, player_position) = player_query.single();
+    let player_position = player_query.single();
     let player_position = player_position.translation.x;
 
-    let (_, mut camera_position) = camera_query.single_mut();
+    let mut camera_position = camera_query.single_mut();
 
     let left_limit = camera_position.translation.x - horizontal_limit;
     let right_limit = camera_position.translation.x + horizontal_limit;
@@ -331,9 +331,9 @@ fn player_enemy_collision(
     mut state: ResMut<State<AppState>>,
     mut commands: Commands,
     enemy_query: Query<(Entity, &EnemyHitbox, &Transform), Without<PlayerGroundHitbox>>,
-    mut player_query: Query<(&Character, &PlayerEnemyHitbox, &Transform, &mut Velocity), Without<GroundHitbox>>,
+    mut player_query: Query<(&PlayerEnemyHitbox, &Transform, &mut Velocity), (With<Character>, Without<GroundHitbox>)>,
 ) {
-    for (_, player_hitbox, player_transform, mut player_velocity) in player_query.iter_mut() {
+    for (player_hitbox, player_transform, mut player_velocity) in player_query.iter_mut() {
         for (enemy_id, enemy_hitbox, enemy_transform) in enemy_query.iter() {
             if let Some(collision) = player_hitbox.0.collide(&player_transform.translation, &enemy_hitbox.0, &enemy_transform.translation) {
                 match collision.collision_type {
@@ -360,10 +360,10 @@ fn check_win(
     options: Res<Options>,
     mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
-    player_query: Query<(&Player, &PlayerGroundHitbox, &Transform, &Positions)>,
+    player_query: Query<(&PlayerGroundHitbox, &Transform, &Positions), With<Player>>,
     win_tile_query: Query<(&WinHitbox, &Transform), Without<Player>>,
 ) {
-    for (_, player_hitbox, player_transform, player_positions) in player_query.iter() {
+    for (player_hitbox, player_transform, player_positions) in player_query.iter() {
         for (win_hitbox, win_transform) in win_tile_query.iter() {
             if let Some(_) = player_hitbox.0.collide(&player_transform.translation, &win_hitbox.0, &win_transform.translation) {
                 rival_positions.0[options.level] = RivalLevelPositions::Stolen(Positions {
@@ -397,15 +397,15 @@ fn out_of_bounds(
     mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     windows: Res<Windows>,
-    player_query: Query<(&Character, &Transform)>,
-    camera_query: Query<(&MainCamera, &Transform), Without<Character>>,
+    player_query: Query<&Transform, With<Character>>,
+    camera_query: Query<&Transform, (With<MainCamera>, Without<Character>)>,
 ) {
-    let (_, camera_position) = camera_query.single();
+    let camera_position = camera_query.single().translation;
 
     let window = windows.get_primary().unwrap();
-    let screen_bottom = camera_position.translation.y - window.height() / 2.0;
+    let screen_bottom = camera_position.y - window.height() / 2.0;
 
-    for (_, transform) in player_query.iter() {
+    for transform in player_query.iter() {
         if transform.translation.y < screen_bottom {
             game_over.send(GameOverEvent {
                 secondary_message: Some("Fell from a great height".to_string()),
@@ -418,9 +418,9 @@ fn out_of_bounds(
 
 fn record_player_position(
     time: Res<Time>,
-    mut query: Query<(&Player, &Transform, &mut Positions)>,
+    mut query: Query<(&Transform, &mut Positions), With<Player>>,
 ) {
-    for (_, transform, mut positions) in query.iter_mut() {
+    for (transform, mut positions) in query.iter_mut() {
         positions.timer.tick(time.delta());
         if positions.timer.finished() {
             positions.values.push_back(transform.translation);
@@ -432,9 +432,9 @@ fn update_rival_position(
     mut game_over: EventWriter<GameOverEvent>,
     mut state: ResMut<State<AppState>>,
     time: Res<Time>,
-    mut query: Query<(&Rival, &mut Transform, &mut Positions)>,
+    mut query: Query<(&mut Transform, &mut Positions), With<Rival>>,
 ) {
-    for (_, mut transform, mut positions) in query.iter_mut() {
+    for (mut transform, mut positions) in query.iter_mut() {
         if positions.values.is_empty() {
             game_over.send(GameOverEvent {
                 secondary_message: Some("Your rival was faster".to_string()),

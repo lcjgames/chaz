@@ -116,9 +116,9 @@ fn check_textures(
 
 fn remove_loading_bar(
     mut commands: Commands,
-    query: Query<(Entity, &LoadingBar)>,
+    query: Query<Entity, With<LoadingBar>>,
 ) {
-    for (id, _) in query.iter() {
+    for id in query.iter() {
         commands.entity(id).despawn();
     }
 }

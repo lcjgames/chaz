@@ -58,7 +58,7 @@ fn ui_camera(
 fn title(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    camera_query: Query<(Entity, &MainCamera)>,
+    camera_query: Query<Entity, With<MainCamera>>,
 ) {
     let text_style = TextStyle {
         font: asset_server.load("kenney-fonts/Fonts/Kenney Blocks.ttf"),
@@ -69,7 +69,7 @@ fn title(
         vertical: VerticalAlign::Center,
         horizontal: HorizontalAlign::Center,
     };
-    let (camera_id, _) = camera_query.single();
+    let camera_id = camera_query.single();
     commands.entity(camera_id).with_children(|camera| {
        camera.spawn_bundle(Text2dBundle {
            text: Text::with_section("Chaz", text_style, text_alignment),
@@ -83,9 +83,9 @@ fn title(
 
 fn title_animation(
     time: Res<Time>,
-    mut query: Query<(&Title, &mut Transform)>,
+    mut query: Query<&mut Transform, With<Title>>,
 ) {
-    for (_, mut transform) in query.iter_mut() {
+    for mut transform in query.iter_mut() {
         //that math major finally came in handy
         const HALF_TURN: f64 = std::f64::consts::PI;
         const ANIMATION_FIRST_ROTATION_START: f64 = 1.0;
@@ -115,9 +115,9 @@ fn title_animation(
 
 fn move_camera(
     time: Res<Time>,
-    mut query: Query<(&MainCamera, &mut Transform)>,
+    mut query: Query<&mut Transform, With<MainCamera>>,
 ) {
-    for (_, mut transform) in query.iter_mut() {
+    for mut transform in query.iter_mut() {
         let time = time.seconds_since_startup() as f32;
         transform.translation.x = time * 30.0;
         transform.translation.y = 30.0 * f32::sin(0.5 * time);
