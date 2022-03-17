@@ -85,9 +85,3 @@ fn play_song(
     let id = audio.play_looped(asset_server.load(song.to_string().as_str()));
     music.0 = Some(MusicId { song, id });
 }
-
-fn stop_music(
-    audio: Res<Audio>,
-) {
-    audio.stop();
-}
