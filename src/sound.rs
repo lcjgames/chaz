@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::*;
+use enum_iterator::IntoEnumIterator;
 
 use crate::AppState;
 
@@ -9,15 +10,10 @@ impl Plugin for Sound {
     fn build(&self, app: &mut App) {
         app
             .add_plugin(AudioPlugin)
-            .init_resource::<Music>()
-            .add_system_set(SystemSet::on_enter(AppState::PreLoad).with_system(play_song(Song::from(AppState::PreLoad))))
-            .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(play_song(Song::from(AppState::Loading))))
-            .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(play_song(Song::from(AppState::Menu))))
-            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(play_song(Song::from(AppState::Options))))
-            .add_system_set(SystemSet::on_enter(AppState::LevelSelect).with_system(play_song(Song::from(AppState::LevelSelect))))
-            .add_system_set(SystemSet::on_enter(AppState::Game).with_system(play_song(Song::from(AppState::Game))))
-            .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(play_song(Song::from(AppState::GameOver))))
-            .add_system_set(SystemSet::on_enter(AppState::Pause).with_system(play_song(Song::from(AppState::Pause))));
+            .init_resource::<Music>();
+        for state in AppState::into_enum_iter() {
+            app.add_system_set(SystemSet::on_enter(state).with_system(play_song(state.into())));
+        }
     }
 }
 
