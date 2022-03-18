@@ -6,6 +6,7 @@ authors = ["Luiz Chagas Jardim <luizchagasjardim@gmail.com", "Jorge Pinto Sousa 
 
 [dependencies]
 lazy_static = "1.4"
+enum-iterator = "0.7.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1"

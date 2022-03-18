@@ -6,7 +6,6 @@ use super::positions::Positions;
 
 use crate::sprite::{SpriteType, SpriteTypeStates, SpriteVariant};
 use crate::Timer;
-use crate::log::console_log;
 
 const LEVEL_00: &str = include_str!("../../../assets/maps/00_map.txt");
 const LEVEL_01: &str = include_str!("../../../assets/maps/01_map.txt");
@@ -28,7 +27,6 @@ pub enum Tile {
     Blue,
     Jeremy,
     Blocky,
-    Npc(SpriteType), //TODO: remove
 }
 
 impl FromStr for Tile {
@@ -223,14 +221,6 @@ impl Map {
                         relative_position: Vec3::default(), //TODO: better values
                         size: Vec2::new(Tile::SIZE, Tile::SIZE), //TODO: better values
                     }),
-                })
-            },
-            Tile::Npc(name) => {
-                Some(TileInfo {
-                    tile_type: tile,
-                    position: position(1.0),
-                    image: SpriteVariant::SpriteSheet(name),
-                    hitbox: None,
                 })
             },
         }
