@@ -229,6 +229,7 @@ fn show_leaderboards_buttons(
 }
 
 fn show_leaderboards_ui(
+    windows: Res<Windows>,
     mut egui_context: ResMut<EguiContext>,
     mut options: ResMut<Options>,
 ) {
@@ -236,9 +237,12 @@ fn show_leaderboards_ui(
     use egui::*;
     use enum_iterator::IntoEnumIterator;
 
+    let game_window = windows.get_primary().unwrap();
+
     Window::new("Leaderboard")
         .collapsible(false)
         .resizable(false)
+        .fixed_pos((game_window.width() * 0.2, game_window.height() * 0.1))
         .show(egui_context.ctx_mut(), |ui| {
             ui.label("Level: ");
             ComboBox::from_id_source("Level select")
