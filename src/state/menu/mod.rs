@@ -217,21 +217,11 @@ fn show_options_menu(
     }.build(&mut commands, &asset_server, &state);
 }
 
-fn show_leaderboards_buttons(
-    state: Res<State<AppState>>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-    ButtonBuilder {
-        text: "Back",
-        action: Action::ChangeState(AppState::Menu),
-    }.build(&mut commands, &asset_server, &state);
-}
-
 fn show_leaderboards_ui(
     windows: Res<Windows>,
     mut egui_context: ResMut<EguiContext>,
     mut options: ResMut<Options>,
+    mut state: ResMut<State<AppState>>,
 ) {
     use crate::score::*;
     use egui::*;
@@ -263,6 +253,9 @@ fn show_leaderboards_ui(
                 });
             for score in get_scores(options.level, options.difficulty) {
                 ui.label(format!("{}: {}s", score.name, score.time));
+            }
+            if ui.button("Back").clicked() {
+                state.set(AppState::Menu).unwrap();
             }
         });
 }
