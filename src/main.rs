@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 mod sound;
 use sound::Sound;
+mod score;
 mod background;
 mod button;
 mod camera;

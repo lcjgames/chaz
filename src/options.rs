@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-
+use enum_iterator::IntoEnumIterator;
 use std::fmt::*;
 
 #[derive(Clone, Debug, Default)]
@@ -22,7 +22,7 @@ pub trait Next {
     fn next(self) -> Self; //TODO: implement with a macro
 }
 
-#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Component, Copy, Debug, Default, IntoEnumIterator, PartialEq)]
 pub enum Difficulty {
     Training,
     Easy,

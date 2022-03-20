@@ -230,10 +230,37 @@ fn show_leaderboards_buttons(
 
 fn show_leaderboards_ui(
     mut egui_context: ResMut<EguiContext>,
+    mut options: ResMut<Options>,
 ) {
-    egui::Window::new("Hello").show(egui_context.ctx_mut(), |ui| {
-        ui.label("world");
-    });
+    use crate::score::*;
+    use egui::*;
+    use enum_iterator::IntoEnumIterator;
+
+    Window::new("Leaderboard")
+        .collapsible(false)
+        .resizable(false)
+        .show(egui_context.ctx_mut(), |ui| {
+            ui.label("Level: ");
+            ComboBox::from_id_source("Level select")
+                .selected_text(options.level.to_string())
+                .show_ui(ui, |ui| {
+                    ui.label("Level: ");
+                    for i in 0..LEVEL_COUNT {
+                        ui.selectable_value(&mut options.level, i, i.to_string());
+                    }
+                });
+            ui.label("Difficulty: ");
+            ComboBox::from_id_source("Difficulty select")
+                .selected_text(options.difficulty.to_string())
+                .show_ui(ui, |ui| {
+                    for difficulty in Difficulty::into_enum_iter() {
+                        ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
+                    }
+                });
+            for score in get_scores(options.level, options.difficulty) {
+                ui.label(format!("{}: {}s", score.name, score.time));
+            }
+        });
 }
 
 fn cleanup(
