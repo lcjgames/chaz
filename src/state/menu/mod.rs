@@ -36,7 +36,7 @@ impl Plugin for Menu {
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(clear_background))
             .add_system_set(SystemSet::on_exit(AppState::LevelSelect).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::Options).with_system(ui_camera))
-            .add_system_set(SystemSet::on_enter(AppState::Options).with_system(show_options_menu))
+            .add_system_set(SystemSet::on_update(AppState::Options).with_system(show_options_menu))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(buttons))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(toggles::<Difficulty>))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(move_camera))
@@ -44,7 +44,6 @@ impl Plugin for Menu {
             .add_system_set(SystemSet::on_exit(AppState::Options).with_system(clear_background))
             .add_system_set(SystemSet::on_exit(AppState::Options).with_system(cleanup))
             .add_system_set(SystemSet::on_enter(AppState::Leaderboard).with_system(ui_camera))
-            .add_system_set(SystemSet::on_enter(AppState::Leaderboard).with_system(show_leaderboards_buttons))
             .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(show_leaderboards_ui))
             .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(buttons))
             .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(move_camera))
@@ -174,47 +173,34 @@ fn show_level_select_buttons(
 struct DifficultyText;
 
 fn show_options_menu(
-    options: Res<Options>,
-    state: Res<State<AppState>>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    windows: Res<Windows>,
+    mut egui_context: ResMut<EguiContext>,
+    mut options: ResMut<Options>,
+    mut state: ResMut<State<AppState>>,
 ) {
-    // difficulty placeholder
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: Rect {
-                    bottom: Val::Px(410.0),
-                    right: Val::Px(215.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "Difficulty",
-                TextStyle {
-                    font: asset_server.load("kenney-fonts/Fonts/Kenney Pixel.ttf"),
-                    font_size: 50.0,
-                    color: Color::BLACK,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(DifficultyText)
-        .insert(Screen(*state.current()));
-    ButtonBuilder {
-        text: "Back",
-        action: Action::ChangeState(AppState::Menu),
-    }.build(&mut commands, &asset_server, &state);
-    OptionToggleBuilder::<Difficulty> {
-        value: options.difficulty,
-    }.build(&mut commands, &asset_server, &state);
+    use crate::score::*;
+    use egui::*;
+    use enum_iterator::IntoEnumIterator;
+
+    let game_window = windows.get_primary().unwrap();
+
+    Window::new("Options")
+        .collapsible(false)
+        .resizable(false)
+        .fixed_pos((game_window.width() * 0.2, game_window.height() * 0.1))
+        .show(egui_context.ctx_mut(), |ui| {
+            ui.label("Difficulty: ");
+            ComboBox::from_id_source("Difficulty select")
+                .selected_text(options.difficulty.to_string())
+                .show_ui(ui, |ui| {
+                    for difficulty in Difficulty::into_enum_iter() {
+                        ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
+                    }
+                });
+            if ui.button("Back").clicked() {
+                state.set(AppState::Menu).unwrap();
+            }
+        });
 }
 
 fn show_leaderboards_ui(
@@ -248,7 +234,7 @@ fn show_leaderboards_ui(
                 .selected_text(options.difficulty.to_string())
                 .show_ui(ui, |ui| {
                     for difficulty in Difficulty::into_enum_iter() {
-                        ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
+                        ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string()); //TODO: this will actually change the selected difficulty lol
                     }
                 });
             for score in get_scores(options.level, options.difficulty) {
