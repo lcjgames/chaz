@@ -7,6 +7,7 @@ pub enum AppState {
     Menu,
     Options,
     LevelSelect,
+    Leaderboard,
     Game,
     GameOver,
     Pause,

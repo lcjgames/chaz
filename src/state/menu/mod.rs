@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_egui::*;
 
 use crate::background::*;
 use crate::button::*;
@@ -15,6 +16,7 @@ impl Plugin for Menu {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<Options>()
+            .add_plugin(EguiPlugin)
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(reset_camera_position))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(ui_camera))
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(title))
@@ -40,7 +42,15 @@ impl Plugin for Menu {
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(move_camera))
             .add_system_set(SystemSet::on_update(AppState::Options).with_system(update_background))
             .add_system_set(SystemSet::on_exit(AppState::Options).with_system(clear_background))
-            .add_system_set(SystemSet::on_exit(AppState::Options).with_system(cleanup));
+            .add_system_set(SystemSet::on_exit(AppState::Options).with_system(cleanup))
+            .add_system_set(SystemSet::on_enter(AppState::Leaderboard).with_system(ui_camera))
+            .add_system_set(SystemSet::on_enter(AppState::Leaderboard).with_system(show_leaderboards_buttons))
+            .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(show_leaderboards_ui))
+            .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(buttons))
+            .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(move_camera))
+            .add_system_set(SystemSet::on_update(AppState::Leaderboard).with_system(update_background))
+            .add_system_set(SystemSet::on_exit(AppState::Leaderboard).with_system(clear_background))
+            .add_system_set(SystemSet::on_exit(AppState::Leaderboard).with_system(cleanup));
     }
 }
 
@@ -134,6 +144,10 @@ fn show_menu_buttons(
         action: Action::ChangeState(AppState::LevelSelect),
     }.build(&mut commands, &asset_server, &state);
     ButtonBuilder {
+        text: "Scores",
+        action: Action::ChangeState(AppState::Leaderboard),
+    }.build(&mut commands, &asset_server, &state);
+    ButtonBuilder {
         text: "Options",
         action: Action::ChangeState(AppState::Options),
     }.build(&mut commands, &asset_server, &state);
@@ -201,6 +215,25 @@ fn show_options_menu(
     OptionToggleBuilder::<Difficulty> {
         value: options.difficulty,
     }.build(&mut commands, &asset_server, &state);
+}
+
+fn show_leaderboards_buttons(
+    state: Res<State<AppState>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    ButtonBuilder {
+        text: "Back",
+        action: Action::ChangeState(AppState::Menu),
+    }.build(&mut commands, &asset_server, &state);
+}
+
+fn show_leaderboards_ui(
+    mut egui_context: ResMut<EguiContext>,
+) {
+    egui::Window::new("Hello").show(egui_context.ctx_mut(), |ui| {
+        ui.label("world");
+    });
 }
 
 fn cleanup(

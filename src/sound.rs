@@ -28,7 +28,7 @@ impl From<AppState> for Song {
     fn from(state: AppState) -> Self {
         match state {
             AppState::PreLoad | AppState::Loading => Song::MainTheme,
-            AppState::Menu | AppState::Options | AppState::LevelSelect => Song::MainTheme,
+            AppState::Menu | AppState::Options | AppState::LevelSelect | AppState::Leaderboard => Song::MainTheme,
             AppState::Game | AppState::Pause => Song::GameTheme,
             AppState::GameOver => Song::GameOverTheme,
         }
