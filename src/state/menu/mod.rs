@@ -15,6 +15,7 @@ pub struct Menu;
 impl Plugin for Menu {
     fn build(&self, app: &mut App) {
         app
+            .init_resource::<LeaderBoardOptions>()
             .init_resource::<Options>()
             .add_plugin(EguiPlugin)
             .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(reset_camera_position))
@@ -206,7 +207,7 @@ fn show_options_menu(
 fn show_leaderboards_ui(
     windows: Res<Windows>,
     mut egui_context: ResMut<EguiContext>,
-    mut options: ResMut<Options>,
+    mut options: ResMut<LeaderBoardOptions>,
     mut state: ResMut<State<AppState>>,
 ) {
     use crate::score::*;
@@ -234,7 +235,7 @@ fn show_leaderboards_ui(
                 .selected_text(options.difficulty.to_string())
                 .show_ui(ui, |ui| {
                     for difficulty in Difficulty::into_enum_iter() {
-                        ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string()); //TODO: this will actually change the selected difficulty lol
+                        ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
                     }
                 });
             for score in get_scores(options.level, options.difficulty) {

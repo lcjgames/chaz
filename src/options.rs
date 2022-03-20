@@ -2,6 +2,21 @@ use bevy::prelude::*;
 use enum_iterator::IntoEnumIterator;
 use std::fmt::*;
 
+#[derive(Clone, Debug)]
+pub struct LeaderBoardOptions {
+    pub difficulty: Difficulty,
+    pub level: usize,
+}
+
+impl Default for LeaderBoardOptions {
+    fn default() -> Self {
+        LeaderBoardOptions {
+            difficulty: Difficulty::default(),
+            level: 1,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct Options {
     pub difficulty: Difficulty,
