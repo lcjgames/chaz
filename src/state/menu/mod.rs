@@ -179,7 +179,6 @@ fn show_options_menu(
     mut options: ResMut<Options>,
     mut state: ResMut<State<AppState>>,
 ) {
-    use crate::score::*;
     use egui::*;
     use enum_iterator::IntoEnumIterator;
 
@@ -198,6 +197,8 @@ fn show_options_menu(
                         ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
                     }
                 });
+            ui.label("Volume: ");
+            ui.add(Slider::new(&mut options.music_volume, 0..=100));
             if ui.button("Back").clicked() {
                 state.set(AppState::Menu).unwrap();
             }

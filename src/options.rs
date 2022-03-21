@@ -17,10 +17,21 @@ impl Default for LeaderBoardOptions {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Options {
     pub difficulty: Difficulty,
     pub level: usize,
+    pub music_volume: u32,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Options {
+            difficulty: Difficulty::default(),
+            level: 1,
+            music_volume: 100,
+        }
+    }
 }
 
 impl Options {

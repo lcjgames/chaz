@@ -3,6 +3,7 @@ use bevy_kira_audio::*;
 use enum_iterator::IntoEnumIterator;
 
 use crate::AppState;
+use crate::options::Options;
 
 pub struct Sound;
 
@@ -10,7 +11,8 @@ impl Plugin for Sound {
     fn build(&self, app: &mut App) {
         app
             .add_plugin(AudioPlugin)
-            .init_resource::<Music>();
+            .init_resource::<Music>()
+            .add_system_set(SystemSet::on_update(AppState::Options).with_system(volume));
         for state in AppState::into_enum_iter() {
             app.add_system_set(SystemSet::on_enter(state).with_system(play_song(state.into())));
         }
@@ -64,4 +66,12 @@ fn play_song(song: Song) -> impl Fn(Res<AssetServer>, Res<Audio>, ResMut<Music>)
         let id = audio.play_looped(asset_server.load(song.to_string().as_str()));
         music.0 = Some(MusicId { song, id });
     }
+}
+
+fn volume(
+    options: Res<Options>,
+    audio: Res<Audio>,
+) {
+    let volume = options.music_volume as f32 / 100.0;
+    audio.set_volume(volume);
 }
