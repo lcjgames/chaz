@@ -19,6 +19,7 @@ impl Default for LeaderBoardOptions {
 
 #[derive(Clone, Debug)]
 pub struct Options {
+    pub name: String,
     pub difficulty: Difficulty,
     pub level: usize,
     pub music_volume: u32,
@@ -27,6 +28,7 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Options {
+            name: "Chaz".to_string(),
             difficulty: Difficulty::default(),
             level: 1,
             music_volume: 100,

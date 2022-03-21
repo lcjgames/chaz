@@ -189,6 +189,8 @@ fn show_options_menu(
         .resizable(false)
         .fixed_pos((game_window.width() * 0.2, game_window.height() * 0.1))
         .show(egui_context.ctx_mut(), |ui| {
+            ui.label("Name: ");
+            ui.text_edit_singleline(&mut options.name);
             ui.label("Difficulty: ");
             ComboBox::from_id_source("Difficulty select")
                 .selected_text(options.difficulty.to_string())
