@@ -329,6 +329,7 @@ fn player_enemy_collision(
     mut commands: Commands,
     enemy_query: Query<(Entity, &EnemyHitbox, &Transform), Without<PlayerGroundHitbox>>,
     mut player_query: Query<(&PlayerEnemyHitbox, &Transform, &mut Velocity), (With<Character>, Without<GroundHitbox>)>,
+    options: Res<Options>,
 ) {
     for (player_hitbox, player_transform, mut player_velocity) in player_query.iter_mut() {
         for (enemy_id, enemy_hitbox, enemy_transform) in enemy_query.iter() {
@@ -341,7 +342,7 @@ fn player_enemy_collision(
                     },
                     _ => {
                         game_over.send(GameOverEvent {
-                            secondary_message: Some("Killed by an enemy".to_string()),
+                            secondary_message: Some(format!("{} was killed by an enemy", options.name)),
                             ..Default::default()
                         });
                         state.set(AppState::GameOver).unwrap_or(());
@@ -396,6 +397,7 @@ fn out_of_bounds(
     windows: Res<Windows>,
     player_query: Query<&Transform, With<Character>>,
     camera_query: Query<&Transform, (With<MainCamera>, Without<Character>)>,
+    options: Res<Options>,
 ) {
     let camera_position = camera_query.single().translation;
 
@@ -405,7 +407,7 @@ fn out_of_bounds(
     for transform in player_query.iter() {
         if transform.translation.y < screen_bottom {
             game_over.send(GameOverEvent {
-                secondary_message: Some("Fell from a great height".to_string()),
+                secondary_message: Some(format!("{} fell from a great height", options.name)),
                 ..Default::default()
             });
             state.set(AppState::GameOver).unwrap();
@@ -430,11 +432,12 @@ fn update_rival_position(
     mut state: ResMut<State<AppState>>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Positions), With<Rival>>,
+    options: Res<Options>,
 ) {
     for (mut transform, mut positions) in query.iter_mut() {
         if positions.values.is_empty() {
             game_over.send(GameOverEvent {
-                secondary_message: Some("Your rival was faster".to_string()),
+                secondary_message: Some(format!("{}'s rival was faster", options.name)),
                 ..Default::default()
             });
             state.set(AppState::GameOver).unwrap();
