@@ -8,10 +8,12 @@ authors = ["Luiz Chagas Jardim <luizchagasjardim@gmail.com", "Jorge Pinto Sousa 
 lazy_static = "1.4"
 enum-iterator = "0.7.0"
 bevy_egui = "0.12.1"
+reqwest = "0.11.10"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.29"
 
 [dependencies.bevy]
 version = "0.6"
