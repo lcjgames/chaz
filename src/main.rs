@@ -22,6 +22,8 @@ use state::*;
 #[macro_use]
 extern crate lazy_static;
 
+extern crate reqwest;
+
 fn main() {
     // When building for WASM, print panics to the browser console
     #[cfg(target_arch = "wasm32")]

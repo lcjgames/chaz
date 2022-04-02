@@ -1,4 +1,4 @@
-use wasm_bindgen_futures::spawn_local;
+use bevy::tasks::AsyncComputeTaskPool;
 
 use crate::options::Difficulty;
 
@@ -9,22 +9,19 @@ pub struct Score {
     pub time: f32,
 }
 
-pub async fn fetch() -> Result<String, reqwest::Error> {
-    let res = reqwest::Client::new()
-        .get("http://127.0.0.1:8001/highscores/list")
-        .header("Accept", "application/vnd.github.v3+json")
-        .header("Access-Control-Allow-Origin", "Any")
-        .send()
-        .await?;
+static mut RESULT: String = String::new(); // TODO: I know, I'm ashamed of this too
 
-    Ok(res.text().await?)
-}
-
-pub fn get_scores(level: usize, difficulty: Difficulty) -> Vec<Score> {
-    spawn_local(async {
-        let scores = fetch().await;
-        crate::log::console_log!("{:?}", scores);
-    });
+pub fn get_scores(level: usize, difficulty: Difficulty, task_pool: &AsyncComputeTaskPool) -> Vec<Score> {
+    unsafe { //TODO: hacky hack
+        task_pool.spawn(async move {
+            let fetch = fetch().await;
+            RESULT = match fetch {
+                Ok(s) => s,
+                Err(e) => e.to_string(),
+            }
+        }).detach();
+        crate::log::console_log!("scores: {:?}", RESULT);
+    }
     vec![
         Score {
             name: "luiz".to_string(),
@@ -39,4 +36,17 @@ pub fn get_scores(level: usize, difficulty: Difficulty) -> Vec<Score> {
             time: 4.2,
         },
     ]
+}
+
+pub async fn fetch() -> Result<String, reqwest::Error> {
+    use reqwest::Client;
+
+    let res = Client::new()
+        .get("http://127.0.0.1:8001/highscores/list")
+        .header("Accept", "application/vnd.github.v3+json")
+        .header("Access-Control-Allow-Origin", "Any")
+        .send()
+        .await?;
+
+    Ok(res.text().await?)
 }
