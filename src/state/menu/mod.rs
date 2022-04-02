@@ -243,8 +243,8 @@ fn show_leaderboards_ui(
                         ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
                     }
                 });
-            for score in get_scores(options.level, options.difficulty, &task_pool) {
-                ui.label(format!("{}: {}s", score.name, score.time));
+            for score in get_scores(options.level.to_string(), options.difficulty, &task_pool) {
+                ui.label(format!("{}: {}", score.username, score.high_score));
             }
             if ui.button("Back").clicked() {
                 state.set(AppState::Menu).unwrap();

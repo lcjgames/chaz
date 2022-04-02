@@ -50,7 +50,8 @@ pub trait Next {
     fn next(self) -> Self; //TODO: implement with a macro
 }
 
-#[derive(Clone, Component, Copy, Debug, Default, IntoEnumIterator, PartialEq)]
+#[derive(Clone, Component, Copy, Debug, Default, Deserialize, IntoEnumIterator, PartialEq)]
+#[serde(rename_all = "UPPERCASE")] //backend stores it like this
 pub enum Difficulty {
     Training,
     Easy,

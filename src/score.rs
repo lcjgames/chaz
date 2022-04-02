@@ -2,43 +2,36 @@ use bevy::tasks::AsyncComputeTaskPool;
 
 use crate::options::Difficulty;
 
+#[derive(Clone, Debug, Deserialize)]
 pub struct Score {
-    pub name: String,
-    pub level: usize,
+    pub id: i32,
+    pub high_score: i32,
+    pub username: String,
     pub difficulty: Difficulty,
-    pub time: f32,
+    pub level: String,
 }
 
-static mut RESULT: String = String::new(); // TODO: I know, I'm ashamed of this too
+static mut RESULT: Vec<Score> = Vec::new(); // TODO: I know, I'm ashamed of this too
 
-pub fn get_scores(level: usize, difficulty: Difficulty, task_pool: &AsyncComputeTaskPool) -> Vec<Score> {
+pub fn get_scores(level: String, difficulty: Difficulty, task_pool: &AsyncComputeTaskPool) -> Vec<&Score> {
     unsafe { //TODO: hacky hack
         task_pool.spawn(async move {
             let fetch = fetch().await;
             RESULT = match fetch {
-                Ok(s) => s,
-                Err(e) => e.to_string(),
+                Ok(v) => v,
+                Err(e) => {
+                    crate::log::console_log!("Fetch error: {:?}", e);
+                    Vec::new()
+                },
             }
         }).detach();
-        crate::log::console_log!("scores: {:?}", RESULT);
+        RESULT.iter().filter(
+            |score| score.level == level && score.difficulty == difficulty
+        ).collect()
     }
-    vec![
-        Score {
-            name: "luiz".to_string(),
-            level,
-            difficulty,
-            time: 6.0,
-        },
-        Score {
-            name: "jorge".to_string(),
-            level,
-            difficulty,
-            time: 4.2,
-        },
-    ]
 }
 
-pub async fn fetch() -> Result<String, reqwest::Error> {
+pub async fn fetch() -> Result<Vec<Score>, reqwest::Error> {
     use reqwest::Client;
 
     let res = Client::new()
@@ -48,5 +41,5 @@ pub async fn fetch() -> Result<String, reqwest::Error> {
         .send()
         .await?;
 
-    Ok(res.text().await?)
+    Ok(res.json().await?)
 }
