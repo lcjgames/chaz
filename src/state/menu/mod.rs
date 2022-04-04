@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::tasks::AsyncComputeTaskPool;
 use bevy_egui::*;
 
 use crate::background::*;
@@ -212,6 +213,7 @@ fn show_leaderboards_ui(
     mut egui_context: ResMut<EguiContext>,
     mut options: ResMut<LeaderBoardOptions>,
     mut state: ResMut<State<AppState>>,
+    task_pool: Res<AsyncComputeTaskPool>,
 ) {
     use crate::score::*;
     use egui::*;
@@ -241,8 +243,8 @@ fn show_leaderboards_ui(
                         ui.selectable_value(&mut options.difficulty, difficulty, difficulty.to_string());
                     }
                 });
-            for score in get_scores(options.level, options.difficulty) {
-                ui.label(format!("{}: {}s", score.name, score.time));
+            for score in get_scores(options.level.to_string(), options.difficulty, &task_pool) {
+                ui.label(format!("{}: {}", score.username, score.high_score));
             }
             if ui.button("Back").clicked() {
                 state.set(AppState::Menu).unwrap();

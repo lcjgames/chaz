@@ -21,6 +21,10 @@ use state::*;
 
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
+
+extern crate reqwest;
 
 fn main() {
     // When building for WASM, print panics to the browser console
