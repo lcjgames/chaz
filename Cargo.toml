@@ -6,7 +6,7 @@ authors = ["Luiz Chagas Jardim <luizchagasjardim@gmail.com", "Jorge Pinto Sousa 
 
 [dependencies]
 enum-iterator = "0.7.0"
-bevy_egui = "0.12.1"
+bevy_egui = "0.13.0"
 lazy_static = "1.4"
 reqwest = { version = "0.11.10", features = ["json"] }
 serde = "1.0.136"
@@ -18,7 +18,7 @@ wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4.29"
 
 [dependencies.bevy]
-version = "0.6"
+version = "0.7"
 default-features = false
 # These are the remaining default features other than `bevy_audio` and `mp3`
 features = [
@@ -32,7 +32,7 @@ features = [
 ]
 
 [dependencies.bevy_kira_audio]
-version = "0.8.0"
+version = "0.9.0"
 default-features = false
 features = [
     "ogg",
