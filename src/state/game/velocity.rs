@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::direction;
-use std::ops::Mul;
+
 #[derive(Component, Default, Deref, DerefMut)]
 pub struct Velocity(pub Vec3);
 
