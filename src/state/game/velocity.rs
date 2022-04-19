@@ -1,28 +1,28 @@
 use bevy::prelude::*;
 
 use super::direction;
-
-#[derive(Component, Default)]
+use std::ops::Mul;
+#[derive(Component, Default, Deref, DerefMut)]
 pub struct Velocity(pub Vec3);
 
 impl Velocity {
     pub fn apply_gravity(&mut self, time: f32) {
         let max_speed = 300.0;
         let gravity_acceleration = 500.0;
-        self.0.y -= gravity_acceleration * time;
-        limit(&mut self.0.y, max_speed);
+        self.y -= gravity_acceleration * time;
+        limit(&mut self.y, max_speed);
     }
     fn increase(&mut self, direction: direction::Direction) {
         let max_speed = 250.0;
         let speed_increase = 10.0;
-        self.0.x += speed_increase * f32::from(direction);
-        limit(&mut self.0.x, max_speed);
+        self.x += speed_increase * f32::from(direction);
+        limit(&mut self.x, max_speed);
     }
     fn decrease(&mut self) {
-        if self.0.x.abs() < 10.0 {
-            self.0.x = 0.0
+        if self.x.abs() < 10.0 {
+            self.x = 0.0
         } else {
-            self.0.x *= 0.9
+            self.x *= 0.9
         };
     }
     pub fn update(&mut self, direction: Option<direction::Direction>) {
@@ -32,18 +32,18 @@ impl Velocity {
         }
     }
     pub fn stop_left(&mut self) {
-        if self.0.x < 0.0 {
-            self.0.x = 0.0;
+        if self.x < 0.0 {
+            self.x = 0.0;
         }
     }
     pub fn stop_right(&mut self) {
-        if self.0.x > 0.0 {
-            self.0.x = 0.0;
+        if self.x > 0.0 {
+            self.x = 0.0;
         }
     }
     pub fn stop_top(&mut self) {
-        if self.0.y > 0.0 {
-            self.0.y = 0.0;
+        if self.y > 0.0 {
+            self.y = 0.0;
         }
     }
 }
