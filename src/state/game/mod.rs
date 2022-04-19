@@ -226,7 +226,7 @@ fn jeremy_movement(
     let movement_amplitude = 20.0;
     for (initial_position, mut transform, mut direction) in query.iter_mut() {
         transform.translation.x += f32::from(*direction) * speed * time.delta_seconds();
-        let amplitude = transform.translation.x - initial_position.0.x;
+        let amplitude = transform.translation.x - initial_position.x;
         if amplitude.abs() >= movement_amplitude {
             *direction = if amplitude > 0.0 {
                 direction::Direction::Left
@@ -257,7 +257,7 @@ fn blocky_movement(
         };
         *image = asset_server.get_handle(image_path);
         transform.translation.y += f32::from(*direction) * speed * time.delta_seconds();
-        let amplitude = transform.translation.y - initial_position.0.y;
+        let amplitude = transform.translation.y - initial_position.y;
         if amplitude >= movement_amplitude {
             *direction = direction::Direction::Down
         }
