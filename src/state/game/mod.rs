@@ -198,11 +198,11 @@ fn input(
         if let Some(new_direction) = new_direction {
             *direction = new_direction;
         }
-        player.update_walk_state(velocity.0.x);
+        player.update_walk_state(velocity.x);
 
         if input.just_pressed(controls.jump) {
             if let Ok(_) = player.try_jump() {
-                velocity.0.y = 500.0;
+                velocity.y = 500.0;
             }
         }
     }
@@ -226,7 +226,7 @@ fn jeremy_movement(
     let movement_amplitude = 20.0;
     for (initial_position, mut transform, mut direction) in query.iter_mut() {
         transform.translation.x += f32::from(*direction) * speed * time.delta_seconds();
-        let amplitude = transform.translation.x - initial_position.0.x;
+        let amplitude = transform.translation.x - initial_position.x;
         if amplitude.abs() >= movement_amplitude {
             *direction = if amplitude > 0.0 {
                 direction::Direction::Left
@@ -257,7 +257,7 @@ fn blocky_movement(
         };
         *image = asset_server.get_handle(image_path);
         transform.translation.y += f32::from(*direction) * speed * time.delta_seconds();
-        let amplitude = transform.translation.y - initial_position.0.y;
+        let amplitude = transform.translation.y - initial_position.y;
         if amplitude >= movement_amplitude {
             *direction = direction::Direction::Down
         }
@@ -300,8 +300,8 @@ fn player_ground_collision(
                 match collision.collision_type {
                     CollisionType::Bottom => {
                         player_transform.translation.y += collision.overlap;
-                        if player_velocity.0.y < 0.0 {
-                            player_velocity.0.y = 0.0;
+                        if player_velocity.y < 0.0 {
+                            player_velocity.y = 0.0;
                             player.hit_ground();
                         }
                     },
@@ -338,7 +338,7 @@ fn player_enemy_collision(
                     CollisionType::Bottom => {
                         //TODO: change player and enemy states so that some animation plays or there is a chance to jump again or something
                         commands.entity(enemy_id).despawn();
-                        player_velocity.0.y *= -1.0;
+                        player_velocity.y *= -1.0;
                     },
                     _ => {
                         game_over.send(GameOverEvent {

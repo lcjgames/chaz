@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 
-#[derive(Component)]
+#[derive(Component, Deref, DerefMut)]
 pub struct InitialPosition(pub Vec3);
 
 #[derive(Clone, Component, Debug)]
