@@ -35,7 +35,7 @@ pub async fn fetch() -> Result<Vec<Score>, reqwest::Error> {
     use reqwest::Client;
 
     let res = Client::new()
-        .get("http://127.0.0.1:8001/highscores/list")
+        .get(std::env!("CHAZ_BACKEND_ADDRESS"))
         .header("Accept", "application/vnd.github.v3+json")
         .header("Access-Control-Allow-Origin", "Any")
         .send()
