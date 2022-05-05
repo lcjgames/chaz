@@ -46,6 +46,10 @@ If this is the first time uploading to the html channel,
 you need to go to the game page on itch.io and click on _Edit game_,
 then set it to playable in the browser.
 
+## FAQ
+
+**How do I change the backend address?** Set the environment varible CHAZ_BACKEND_ADDRESS, or change it in .cargo/config.toml
+
 # TODO
 
 * Go through the code and fix everything marked with a TODO

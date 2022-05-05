@@ -3,3 +3,6 @@ target = "wasm32-unknown-unknown"
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
+
+[env]
+CHAZ_BACKEND_ADDRESS = "http://3.90.205.31:8001/highscores/list"
